@@ -47,7 +47,9 @@
   let idx = fromHash() ?? 0;
   let step = 0;
   const maxCache = {};
+  // With ?all every fragment is already visible, so a slide has no steps left to click through.
   const maxOf = (i) => {
+    if (qs.has('all')) return 0;
     if (maxCache[i] == null) {
       const tmp = document.createElement('div');
       tmp.innerHTML = slides[i].render(slides[i]);
