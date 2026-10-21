@@ -17,7 +17,7 @@ I18N.nl = {
   'p.prev': '← vorige', 'p.nextbtn': 'volgende →', 'p.reset': 'timer resetten (R)',
   'p.budget': 'Budget', 'p.nobudget': 'Naslag: niet presenteren', 'p.next': 'Volgende', 'p.morestep': 'nog een stap op deze slide',
   'p.behind': 'achter met', 'p.ahead': 'voor met', 'p.ontime': 'op schema',
-  'ui.menu': 'Menu (?)', 'ui.handout': 'Handout', 'ui.handoutoff': 'Handout-modus uitzetten (H)',
+  'ui.menu': 'Menu (?)', 'ui.home': 'Alle decks', 'ui.handout': 'Handout', 'ui.handoutoff': 'Handout-modus uitzetten (H)',
   'menu.view': 'Weergave', 'menu.present': 'Presenteren', 'menu.export': 'Exporteren',
   'menu.keys': '→ / spatie: volgende · ←: vorige · L: taal · Esc: sluiten. Klik op een skill voor zijn kaart.',
   'cmd.all': 'Handout: alles tonen', 'cmd.theme': 'Donker thema', 'cmd.overview': 'Overzicht', 'cmd.fullscreen': 'Volledig scherm',

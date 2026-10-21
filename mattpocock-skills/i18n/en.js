@@ -17,7 +17,7 @@ I18N.en = {
   'p.prev': '← previous', 'p.nextbtn': 'next →', 'p.reset': 'reset timer (R)',
   'p.budget': 'Budget', 'p.nobudget': 'Reference: not presented', 'p.next': 'Next', 'p.morestep': 'one more step on this slide',
   'p.behind': 'behind by', 'p.ahead': 'ahead by', 'p.ontime': 'on time',
-  'ui.menu': 'Menu (?)', 'ui.handout': 'Handout', 'ui.handoutoff': 'Turn off handout mode (H)',
+  'ui.menu': 'Menu (?)', 'ui.home': 'All decks', 'ui.handout': 'Handout', 'ui.handoutoff': 'Turn off handout mode (H)',
   'menu.view': 'View', 'menu.present': 'Present', 'menu.export': 'Export',
   'menu.keys': '→ / space: next · ←: previous · L: language · Esc: close. Click a skill for its card.',
   'cmd.all': 'Handout: show everything', 'cmd.theme': 'Dark theme', 'cmd.overview': 'Overview', 'cmd.fullscreen': 'Full screen',

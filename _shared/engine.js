@@ -196,12 +196,13 @@
     if (!show) return;
     menu.innerHTML = `
       <div class="menu-in" role="dialog" aria-label="${DECK.t('ui.menu')}">
+        ${MODE === 'show' ? `<a class="cmd home" href="../"><span>← ${DECK.t('ui.home')}</span></a>` : ''}
         <span class="label">${DECK.t('menu.view')}</span>${cmdButtons(['all', 'theme', 'overview', 'fullscreen', 'blackout'])}
         <span class="label">${DECK.t('menu.present')}</span>${cmdButtons(['presenter'])}
         <span class="label">${DECK.t('menu.export')}</span>${cmdButtons(['pdf', 'pdfnotes'])}
         <p class="hint">${DECK.t('menu.keys')}</p>
       </div>`;
-    menu.querySelector('.cmd')?.focus();
+    menu.querySelector('button.cmd')?.focus();
   }
   function toggleFullscreen() {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});

@@ -265,9 +265,11 @@ body.presenter { overflow: auto; background: var(--bg); }
 .menu-in { width: 320px; background: var(--panel); border: 1px solid var(--line); border-top: 6px solid var(--brand); border-radius: 4px; box-shadow: var(--shadow); padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 4px; animation: pop .2s ease-out both; }
 .menu-in .label { font-size: 12px; margin: 8px 6px 2px; }
 .menu-in .label:first-child { margin-top: 0; }
+.menu-in .home + .label { margin-top: 6px; }
 .menu-in .hint { font-size: 13px; color: var(--fg-faint); margin: 8px 6px 0; line-height: 1.4; }
 .cmd { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: 4px; padding: 7px 10px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--fg); }
 .cmd:hover, .cmd:focus-visible { background: var(--bg-2); }
+.cmd.home { text-decoration: none; border-bottom: 1px solid var(--line); border-radius: 4px 4px 0 0; margin-bottom: 4px; padding-bottom: 10px; }
 .cmd.on span::after { content: " ✓"; color: var(--brand-ink); }
 kbd { font-family: var(--f-mono); font-size: 12px; font-weight: 600; color: var(--fg-dim); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; min-width: 22px; text-align: center; }
 /* Buttons on a slide use the same commands, laid out as a grid. */
