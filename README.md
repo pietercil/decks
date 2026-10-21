@@ -4,7 +4,7 @@ Presentaties en handleidingen, gehost via GitHub Pages.
 
 | Deck | Map | Inhoud |
 |---|---|---|
-| Skills for Real Engineers | [`mattpocock-skills/`](mattpocock-skills/) | De agent skills van Matt Pocock: 10 slides overzicht (±10 min) en een naslag met elke skill |
+| Skills for Real Engineers | [`mattpocock-skills/`](mattpocock-skills/) | De agent skills van Matt Pocock: 10 slides overzicht (±10 min) en een naslag met elke skill. Nederlands en Engels |
 
 ## Lokaal bekijken
 
@@ -33,6 +33,7 @@ Alle opties staan in het **☰-menu** rechtsboven (of druk op **?**), en ook op 
 | **T** | licht / donker |
 | **B** of **.** | zwart scherm |
 | **F** | volledig scherm |
+| **L** | taal wisselen (NL / EN) |
 | Esc | menu / kaart / overzicht / zwart scherm sluiten |
 
 Klik op een `/skill` om zijn kaart te openen. Op tablet en telefoon: swipen om te navigeren.
@@ -47,6 +48,7 @@ De presenter view openen zet hem in alle vensters uit.
 
 Elke optie uit het menu werkt ook als link:
 
+- `?lang=en` / `?lang=nl`: start in die taal (anders de laatst gekozen taal, dan de taal van de browser)
 - `?all`: handout-modus (wint van wat de browser onthouden heeft)
 - `?theme=dark`: start in het donkere thema
 - `#7` of `#build`: open op slide 7, of op de slide met die id
@@ -64,7 +66,7 @@ van de huidige stap. Houd het aantal `[→]` gelijk aan het aantal klikstappen o
 | Wat | Waar |
 |---|---|
 | Stijl (Pietercil-branding), engine, helpers, logo | `_shared/` |
-| Slideteksten en speaker notes (`n.<slide-id>`) | `<deck>/i18n/nl.js` |
+| Slideteksten en speaker notes (`n.<slide-id>`) | `<deck>/i18n/nl.js`, `<deck>/i18n/en.js` (zelfde sleutels) |
 | Slide-opbouw en tijdsbudget per hoofdstuk | `<deck>/js/slides.js` |
 | Skills: fase, wie start hem, wat roept hij aan | `mattpocock-skills/js/skills.js` |
 

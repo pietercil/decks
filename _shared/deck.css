@@ -180,9 +180,9 @@ ul.clean li::before { content: ""; position: absolute; left: 2px; top: .5em; wid
 .fm .fix b { font-size: 21px; }
 
 /* ---------- decision tree (cheat sheet) ---------- */
-.dt { display: grid; grid-template-columns: 1fr auto; gap: 0; align-content: start; align-items: center; }
-.dt .q { font-size: 20px; padding: 7px 0; border-bottom: 1px solid var(--line); }
-.dt .a { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; padding: 5px 0 5px 22px; border-bottom: 1px solid var(--line); }
+.dt { display: grid; grid-template-columns: 1fr auto; gap: 0; align-content: start; align-items: stretch; }
+.dt .q { display: flex; align-items: center; font-size: 20px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.dt .a { display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex-wrap: wrap; padding: 5px 0 5px 22px; border-bottom: 1px solid var(--line); }
 .dt .a .chip { font-size: 16px; padding: 3px 9px; }
 
 /* ---------- skill card (modal and reference slides) ---------- */

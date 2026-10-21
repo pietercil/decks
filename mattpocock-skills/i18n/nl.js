@@ -19,7 +19,7 @@ I18N.nl = {
   'p.behind': 'achter met', 'p.ahead': 'voor met', 'p.ontime': 'op schema',
   'ui.menu': 'Menu (?)', 'ui.handout': 'Handout', 'ui.handoutoff': 'Handout-modus uitzetten (H)',
   'menu.view': 'Weergave', 'menu.present': 'Presenteren', 'menu.export': 'Exporteren',
-  'menu.keys': '→ / spatie: volgende · ←: vorige · Esc: sluiten. Klik op een skill voor zijn kaart.',
+  'menu.keys': '→ / spatie: volgende · ←: vorige · L: taal · Esc: sluiten. Klik op een skill voor zijn kaart.',
   'cmd.all': 'Handout: alles tonen', 'cmd.theme': 'Donker thema', 'cmd.overview': 'Overzicht', 'cmd.fullscreen': 'Volledig scherm',
   'cmd.blackout': 'Zwart scherm', 'cmd.presenter': 'Presenter view', 'cmd.pdf': 'PDF: slides', 'cmd.pdfnotes': 'PDF: met notities',
 
@@ -236,7 +236,7 @@ I18N.nl = {
   'src.version': 'Gecontroleerd tegen mattpocock/skills v1.3.1. De repo verandert vaak: kijk bij twijfel in de CHANGELOG.',
   'src.books': 'De boeken eronder',
   'src.keys': 'Het deck bedienen',
-  'src.keysd': '→ / spatie: volgende · ←: vorige · Esc: sluiten. Klik op een skill voor zijn kaart. Hetzelfde menu opent met ☰ rechtsboven of de toets ?. Bij PDF: kies “Opslaan als PDF” in het printvenster.',
+  'src.keysd': '→ / spatie: volgende · ←: vorige · L: taal · Esc: sluiten. Klik op een skill voor zijn kaart. Hetzelfde menu opent met ☰ rechtsboven of de toets ?. Bij PDF: kies “Opslaan als PDF” in het printvenster.',
 
   // ---------- speaker notes: [→] = one click; one paragraph per step ----------
   'n.title': 'Tien minuten overzicht van de agent skills van Matt Pocock, daarna een halfuur live demo op echte code. Hij noemt ze zelf <i>Skills for Real Engineers</i>: het gaat niet om sneller prompten, maar om werken met een agent zoals een goede engineer werkt. Niets noteren: dit deck blijft beschikbaar, en achteraan staat elke skill uitgeschreven als naslag.',
