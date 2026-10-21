@@ -23,6 +23,8 @@
   --st-core: #545454;
   --term-bg: #222222;
   --term-fg: #f3f3f3;
+  --gold: #c9a24a;                                         /* general slides in the progress bar */
+  --gold-fill: linear-gradient(90deg, #f0d27a, #b8892b);
   --shadow: 0 30px 60px -30px rgba(0,0,0,.3);
   --f-body: "Manrope", "Nunito Sans", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -221,8 +223,11 @@ body.idle .chrome { opacity: 0; }
 .chrome button.on { color: #222; background: var(--brand); border-color: var(--brand); }
 .chrome .count { font-size: 13px; color: var(--fg-faint); padding: 0 6px; font-variant-numeric: tabular-nums; }
 #progress { position: fixed; left: 0; right: 0; bottom: 0; height: 6px; display: flex; gap: 2px; z-index: 30; }
-#progress .seg { flex: var(--w); background: color-mix(in srgb, var(--fg) 10%, transparent); position: relative; overflow: hidden; cursor: pointer; }
-#progress .seg i { position: absolute; inset: 0; width: var(--p, 0%); background: var(--brand); transition: width .4s; }
+#progress .seg { flex: 1; background: var(--fill); cursor: pointer; transition: opacity .4s, transform .3s; transform-origin: bottom; }
+#progress .seg.ch-start { margin-left: 8px; }
+#progress .seg.todo { opacity: .22; }
+#progress .seg.cur { transform: scaleY(1.6); }
+#progress .seg:hover { opacity: 1; }
 #blackout { position: fixed; inset: 0; background: #000; z-index: 50; }
 @media (pointer: coarse) { .chrome button { min-width: 40px; min-height: 40px; font-size: 14px; } }
 #rotate { position: fixed; z-index: 35; left: 16px; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); color: var(--fg); font-size: 15px; box-shadow: var(--shadow); }

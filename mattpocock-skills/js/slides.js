@@ -107,7 +107,7 @@ Commit your work to the current branch.</pre>
         </div>
       </div>` },
 
-    { id: 'fog', ch: 'flow', stage: 'shaping', render: (s) => `
+    { id: 'fog', ch: 'flow', stage: 'analysis', render: (s) => `
       ${head(s)}
       <div class="grid fill" style="grid-template-columns:.9fr 1.1fr">
         <div class="stack" style="gap:14px">
@@ -122,7 +122,7 @@ Commit your work to the current branch.</pre>
 <span class="c">${t('fog.nys')}</span>
 <span class="k">## Out of scope</span></pre>
           </div>
-          <div class="callout sm" style="--c:var(--st-shaping)"><p>${t('fog.plan')}</p></div>
+          <div class="callout sm" style="--c:var(--st-analysis)"><p>${t('fog.plan')}</p></div>
         </div>
         <div class="stack" style="gap:10px">
           <span class="label">${t('fog.who')}</span>
@@ -139,7 +139,7 @@ Commit your work to the current branch.</pre>
         </div>
       </div>` },
 
-    { id: 'build', ch: 'flow', stage: 'planning', render: (s) => `
+    { id: 'build', ch: 'flow', stage: 'planning', bar: ['planning', 'development'], render: (s) => `
       ${head(s)}
       <div class="flow">
         <div class="step" style="--c:var(--st-planning)">${chip('to-spec', 'big')}<p>${t('build.spec')}</p></div>
@@ -173,8 +173,9 @@ Commit your work to the current branch.</pre>
     { id: 'cheat', ch: 'go', stage: 'core', render: (s) => `
       ${head(s)}
       <div class="dt fill">
-        ${[['ask-matt'], ['grill-me'], ['grill-with-docs'], ['prototype'], ['research'], ['to-questionnaire'], ['wayfinder'], ['to-spec', 'to-tickets'], ['implement', 'implement-spec'], ['triage'], ['diagnosing-bugs'], ['improve-codebase-architecture']]
-          .map((ids, i) => `<div class="q">${t('cheat.q' + (i + 1))}</div><div class="a">${chips(ids)}</div>`).join('')}
+        ${[[1, ['ask-matt']], [2, ['grill-me']], [3, ['grill-with-docs']], [7, ['wayfinder']], [4, ['prototype']], [5, ['research']], [6, ['to-questionnaire']],
+           [8, ['to-spec', 'to-tickets']], [9, ['implement', 'implement-spec']], [10, ['triage']], [11, ['diagnosing-bugs']], [12, ['improve-codebase-architecture']]]
+          .map(([q, ids]) => `<div class="q">${t('cheat.q' + q)}</div><div class="a">${chips(ids)}</div>`).join('')}
       </div>
       <div class="row" style="gap:10px"><span class="label" style="margin-right:6px">${t('map.hand')}</span>
         ${['handoff', 'wait-what', 'retro', 'teach', 'pr'].map((id) => `${chip(id, 'sm')}<span class="xs dim" style="margin-right:10px">${t('cheat.h.' + id)}</span>`).join('')}
@@ -205,8 +206,8 @@ Commit your work to the current branch.</pre>
       </div>` },
 
     // ===== Reference (not presented; the manual) =====
-    ref('r-analysis', 'analysis', ['grill-with-docs', 'grill-me', 'grilling', 'domain-modeling']),
-    ref('r-shaping', 'shaping', ['wayfinder', 'research', 'prototype', 'to-questionnaire', 'wizard']),
+    ref('r-analysis', 'analysis', ['grill-with-docs', 'grill-me', 'wayfinder', 'grilling', 'domain-modeling']),
+    ref('r-shaping', 'shaping', ['research', 'prototype', 'to-questionnaire', 'wizard']),
     ref('r-planning', 'planning', ['to-spec', 'to-tickets'], () => `
       <div class="panel soft" style="grid-column:span 1;gap:8px;padding:16px 18px">
         <span class="label">${t('r-planning.ctx')}</span>

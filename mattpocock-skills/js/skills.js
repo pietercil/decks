@@ -12,8 +12,9 @@ DECK.skills = {
   'grill-me':         { stage: 'analysis', invoker: 'user', uses: ['grilling'], to: [] },
   'grilling':         { stage: 'analysis', invoker: 'model', uses: [], to: [] },
   'domain-modeling':  { stage: 'analysis', invoker: 'model', uses: [], to: [] },
+  // the multi-session sibling of grilling: decisions, not deliverables, handed to /to-spec
+  'wayfinder':        { stage: 'analysis', invoker: 'user', uses: ['research', 'prototype', 'grilling', 'domain-modeling'], to: ['to-spec'] },
   // Shaping: answer what a conversation alone can't
-  'wayfinder':        { stage: 'shaping', invoker: 'user', uses: ['research', 'prototype', 'grilling', 'domain-modeling'], to: ['to-spec'] },
   'research':         { stage: 'shaping', invoker: 'model', uses: [], to: ['grill-with-docs'] },
   'prototype':        { stage: 'shaping', invoker: 'model', uses: [], to: ['handoff', 'grill-with-docs'] },
   'to-questionnaire': { stage: 'shaping', invoker: 'user', uses: [], to: ['grill-with-docs', 'to-spec'] },
@@ -44,8 +45,8 @@ DECK.skills = {
 
 // Columns of the lifecycle map (order inside a column = order of use)
 DECK.mapCols = {
-  analysis:    ['grill-with-docs', 'grill-me'],
-  shaping:     ['wayfinder', 'research', 'prototype', 'to-questionnaire', 'wizard'],
+  analysis:    ['grill-with-docs', 'grill-me', 'wayfinder'],
+  shaping:     ['research', 'prototype', 'to-questionnaire', 'wizard'],
   planning:    ['to-spec', 'to-tickets'],
   development: ['implement', 'implement-spec', 'tdd', 'code-review', 'pr'],
   maintenance: ['triage', 'diagnosing-bugs', 'improve-codebase-architecture', 'retro'],

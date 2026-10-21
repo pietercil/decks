@@ -298,20 +298,22 @@
     setTimeout(() => send({ type: 'nav', idx, step }), 800);
   }
 
+  // Progress: one segment per slide in the colour of its stage (s.bar = [stage, stage] splits it; 'core' is gold).
+  // Seen slides are full colour, upcoming ones a light tint; a wider gap marks a new chapter.
+  const segFill = (s) => {
+    const col = (st) => (st === 'core' ? 'var(--gold)' : `var(--st-${st})`);
+    if (s.bar) return `linear-gradient(90deg, ${s.bar.map((st, i) => `${col(st)} ${(i / s.bar.length) * 100}% ${((i + 1) / s.bar.length) * 100}%`).join(', ')})`;
+    return (s.stage || 'core') === 'core' ? 'var(--gold-fill)' : col(s.stage);
+  };
   function buildProgress() {
     const bar = document.getElementById('progress');
-    bar.innerHTML = DECK.chapters.map((c) => {
-      const n = slides.filter((s) => s.ch === c.id).length;
-      return `<div class="seg" data-ch="${c.id}" style="--w:${n}" title="${DECK.t('ch.' + c.id)}"><i></i></div>`;
-    }).join('');
-    bar.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click', () => go(slides.findIndex((s) => s.ch === seg.dataset.ch))));
+    bar.innerHTML = slides.map((s, i) => `<div class="seg ${i && s.ch !== slides[i - 1].ch ? 'ch-start' : ''}" data-i="${i}" style="--fill:${segFill(s)}" title="${i + 1} · ${DECK.t('ch.' + s.ch)}"></div>`).join('');
+    bar.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click', () => go(+seg.dataset.i)));
   }
   function updateProgress() {
-    const cur = slides[idx];
-    const ci = DECK.chapters.findIndex((c) => c.id === cur.ch);
     document.querySelectorAll('#progress .seg').forEach((seg, i) => {
-      const inCh = slides.filter((s) => s.ch === seg.dataset.ch);
-      seg.querySelector('i').style.setProperty('--p', i < ci ? '100%' : i > ci ? '0%' : ((inCh.indexOf(cur) + 1) / inCh.length) * 100 + '%');
+      seg.classList.toggle('todo', i > idx);
+      seg.classList.toggle('cur', i === idx);
     });
     document.getElementById('count').textContent = `${idx + 1} / ${slides.length}`;
   }
