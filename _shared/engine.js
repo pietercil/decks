@@ -35,6 +35,9 @@
     });
   };
 
+  // Speaker notes are one paragraph per click: "[→]" in n.<slide-id> marks where the next step starts.
+  const noteParts = (id) => DECK.t('n.' + id).split('[→]').map((p) => p.trim()).filter(Boolean);
+
   // ---------- state ----------
   const slides = DECK.slides;
   // A hash is a slide number (#7) or a slide id (#map).
@@ -46,10 +49,14 @@
   };
   let idx = fromHash() ?? 0;
   let step = 0;
+  // Handout mode: every fragment visible at once. ?all in the URL wins; otherwise the browser remembers the last choice.
+  // The presenter view always works in steps, and print always shows everything.
+  let ALL = MODE === 'show' && (qs.has('all') || store.get('all') === '1');
+  if (qs.has('all')) store.set('all', '1');
   const maxCache = {};
-  // With ?all every fragment is already visible, so a slide has no steps left to click through.
+  // In handout mode every fragment is already visible, so a slide has no steps left to click through.
   const maxOf = (i) => {
-    if (qs.has('all')) return 0;
+    if (ALL) return 0;
     if (maxCache[i] == null) {
       const tmp = document.createElement('div');
       tmp.innerHTML = slides[i].render(slides[i]);
@@ -61,7 +68,7 @@
   // ---------- rendering ----------
   function paint(stageEl, i, st, opts = {}) {
     const s = slides[i];
-    if (qs.has('all')) { opts = { all: true }; st = 99; }
+    if (ALL) { opts = { all: true }; st = 99; }
     stageEl.style.setProperty('--c', `var(--st-${s.stage || 'core'})`);
     stageEl.innerHTML = `<section class="slide ${s.cls || ''}" data-id="${s.id}">${s.render(s)}</section>`;
     stageEl.classList.toggle('all', !!opts.all);
@@ -92,6 +99,7 @@
     if (!msg) return;
     if (msg.type === 'nav' && (msg.idx !== idx || msg.step !== step)) go(msg.idx, msg.step, false);
     if (msg.type === 'lang' && msg.lang !== lang) setLang(msg.lang, false);
+    if (msg.type === 'all' && MODE === 'show' && msg.on !== ALL) setAll(msg.on, false);
   }
   if (bc) bc.onmessage = (e) => receive(e.data);
   window.addEventListener('storage', (e) => { if (e.key === NS + 'sync' && e.newValue) receive(JSON.parse(e.newValue)); });
@@ -103,8 +111,25 @@
     const changed = i !== idx;
     idx = i; step = Math.max(0, Math.min(st, maxOf(i)));
     if (changed || !view.rendered) view.render(); else view.step();
-    if (MODE === 'show') history.replaceState(null, '', location.pathname + location.search + '#' + (idx + 1));
+    if (MODE === 'show') syncUrl();
     if (broadcast) send({ type: 'nav', idx, step });
+  }
+  // The URL mirrors the slide and the handout mode, so a copied link opens the same view.
+  function syncUrl() {
+    const p = new URLSearchParams(location.search);
+    if (ALL) p.set('all', ''); else p.delete('all');
+    const q = p.toString().replace(/=(?=&|$)/g, '');
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + '#' + (idx + 1));
+  }
+  function setAll(on, broadcast = true) {
+    if (MODE === 'show') {
+      ALL = on;
+      if (on) step = 0;
+      view.render(); syncUrl();
+    }
+    store.set('all', on ? '1' : '0');
+    updateBadge();
+    if (broadcast) send({ type: 'all', on });
   }
   const next = () => (step < maxOf(idx) ? go(idx, step + 1) : idx < slides.length - 1 && go(idx + 1, 0));
   const prev = () => (step > 0 ? go(idx, step - 1) : idx > 0 && go(idx - 1, maxOf(idx - 1)));
@@ -144,8 +169,60 @@
     return m.length > 0;
   }
 
+  // ---------- commands: the ☰ menu and the buttons on a slide share these ----------
+  const printUrl = (notes) => location.pathname + '?print' + (notes ? '&notes' : '');
+  const CMDS = {
+    all: { key: 'H', run: () => setAll(!ALL), on: () => ALL },
+    pdf: { run: () => window.open(printUrl(false), '_blank') },
+    pdfnotes: { run: () => window.open(printUrl(true), '_blank') },
+    theme: { key: 'T', run: () => toggleTheme(), on: () => document.documentElement.dataset.theme === 'dark' },
+    overview: { key: 'O', run: () => toggleOverview() },
+    presenter: { key: 'P', run: () => openPresenter() },
+    fullscreen: { key: 'F', run: () => toggleFullscreen() },
+    blackout: { key: 'B', run: () => { blackout.hidden = false; } },
+  };
+  const runCmd = (c) => { if (CMDS[c]) { toggleMenu(false); CMDS[c].run(); } };
+  const cmdButtons = (ids) => ids.map((c) => `
+    <button class="cmd ${CMDS[c].on && CMDS[c].on() ? 'on' : ''}" data-cmd="${c}">
+      <span>${DECK.t('cmd.' + c)}</span>${CMDS[c].key ? `<kbd>${CMDS[c].key}</kbd>` : ''}</button>`).join('');
+  DECK.cmdButtons = cmdButtons;
+
+  const menu = document.createElement('div');
+  menu.id = 'menu'; menu.hidden = true;
+  document.body.appendChild(menu);
+  function toggleMenu(force) {
+    const show = force != null ? force : menu.hidden;
+    menu.hidden = !show;
+    if (!show) return;
+    menu.innerHTML = `
+      <div class="menu-in" role="dialog" aria-label="${DECK.t('ui.menu')}">
+        <span class="label">${DECK.t('menu.view')}</span>${cmdButtons(['all', 'theme', 'overview', 'fullscreen', 'blackout'])}
+        <span class="label">${DECK.t('menu.present')}</span>${cmdButtons(['presenter'])}
+        <span class="label">${DECK.t('menu.export')}</span>${cmdButtons(['pdf', 'pdfnotes'])}
+        <p class="hint">${DECK.t('menu.keys')}</p>
+      </div>`;
+    menu.querySelector('.cmd')?.focus();
+  }
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+    else document.exitFullscreen?.();
+  }
+  // A badge that never fades while handout mode is on, so nobody starts presenting with everything visible.
+  const badge = document.createElement('button');
+  badge.id = 'allBadge'; badge.hidden = true;
+  badge.addEventListener('click', () => setAll(false));
+  document.body.appendChild(badge);
+  function updateBadge() {
+    badge.hidden = !(ALL && MODE === 'show');
+    badge.textContent = DECK.t('ui.handout') + ' ✕';
+    badge.title = DECK.t('ui.handoutoff');
+  }
+
   // ---------- in-slide actions (event delegation) ----------
   document.addEventListener('click', (e) => {
+    const cmdEl = e.target.closest('[data-cmd]');
+    if (cmdEl && !e.target.closest('#overview')) { e.stopPropagation(); runCmd(cmdEl.dataset.cmd); return; }
+    if (!menu.hidden && !e.target.closest('#menu') && !e.target.closest('#menuBtn')) toggleMenu(false);
     const stageEl = e.target.closest('.stage');
     const chipEl = e.target.closest('.chip[data-skill]');
     if (chipEl && stageEl && !e.target.closest('#overview')) { e.stopPropagation(); openSkill(chipEl.dataset.skill, stageEl); return; }
@@ -159,6 +236,7 @@
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key;
     if (k === 'Escape') {
+      if (!menu.hidden) return toggleMenu(false);
       if (closeModal()) return;
       if (ov && !ov.hidden) return toggleOverview(false);
       if (blackout && !blackout.hidden) blackout.hidden = true;
@@ -166,6 +244,8 @@
     }
     const tgt = e.target instanceof Element ? e.target : document.body;
     if ([' ', 'Enter'].includes(k) && tgt.closest('button,[role=button],a')) return; // let the focused control handle it
+    if (k === '?' && MODE === 'show') return toggleMenu();
+    if ((k === 'h' || k === 'H') && MODE === 'show') return setAll(!ALL);
     if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); closeModal(); next(); }
     else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); closeModal(); prev(); }
     else if (k === 'Home') go(0);
@@ -175,7 +255,7 @@
     else if ((k === 'o' || k === 'O') && MODE === 'show') toggleOverview();
     else if ((k === 'p' || k === 'P') && MODE === 'show') openPresenter();
     else if ((k === 'b' || k === 'B' || k === '.') && MODE === 'show') blackout.hidden = !blackout.hidden;
-    else if (k === 'f' || k === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); }
+    else if (k === 'f' || k === 'F') toggleFullscreen();
     else if ((k === 'r' || k === 'R') && MODE === 'presenter') resetTimer();
   });
 
@@ -185,11 +265,15 @@
     topbar.insertAdjacentHTML('afterbegin', LANGS.map((l) => `<button data-lang="${l}">${l.toUpperCase()}</button>`).join(''));
     topbar.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
   }
+  topbar.insertAdjacentHTML('beforeend', '<button id="menuBtn" aria-haspopup="dialog">☰</button>');
+  document.getElementById('menuBtn').addEventListener('click', () => toggleMenu());
   function setUiText() {
     const set = (id, k, attr) => { const el = document.getElementById(id); if (el) el[attr || 'textContent'] = DECK.t(k); };
     set('rotateTxt', 'ui.rotate');
     set('themeBtn', 'ui.theme', 'title'); set('ovBtn', 'ui.overview', 'title'); set('prBtn', 'ui.presenter', 'title');
+    set('menuBtn', 'ui.menu', 'title');
     set('pPrev', 'p.prev'); set('pNext', 'p.nextbtn'); set('pReset', 'p.reset');
+    updateBadge();
   }
   const ov = document.getElementById('overview');
   const blackout = document.getElementById('blackout');
@@ -205,7 +289,9 @@
   document.addEventListener('mousemove', wake);
   document.addEventListener('pointerdown', wake); wake();
 
+  // Opening the presenter view means presenting: back to steps in every window.
   function openPresenter() {
+    if (ALL) setAll(false);
     const w = window.open(location.pathname + '?presenter&lang=' + lang + '#' + (idx + 1), 'deck-presenter', 'width=1400,height=900');
     if (!w) console.warn('[deck] presenter window blocked: allow pop-ups or open ?presenter manually');
     setTimeout(() => send({ type: 'nav', idx, step }), 800);
@@ -280,13 +366,25 @@
     document.getElementById('rotateBtn').addEventListener('click', () => { rot.hidden = true; store.set('rotateDismissed', '1'); });
   }
 
+  // Print is always light. ?print gives one landscape page per slide; ?print&notes puts the notes under each slide on a portrait page.
   if (MODE === 'print') {
+    const withNotes = qs.has('notes');
+    document.documentElement.dataset.theme = 'light';
     document.body.classList.add('print');
-    document.querySelectorAll('.chrome,#progress,#viewport').forEach((el) => el.remove());
+    document.body.classList.toggle('with-notes', withNotes);
+    document.querySelectorAll('.chrome,#progress,#viewport,#menu,#allBadge').forEach((el) => el.remove());
     view = {
       render() {
-        document.querySelectorAll('body > .stage').forEach((el) => el.remove());
-        slides.forEach((_, i) => { const st = document.createElement('div'); st.className = 'stage'; document.body.appendChild(st); paint(st, i, 99, { all: true }); });
+        document.querySelectorAll('body > .page').forEach((el) => el.remove());
+        slides.forEach((s, i) => {
+          const page = document.createElement('div');
+          page.className = 'page';
+          page.innerHTML = '<div class="stage"></div>' + (withNotes
+            ? `<div class="print-notes"><div class="ch">${i + 1} / ${slides.length} · ${DECK.t('ch.' + s.ch)}</div>${noteParts(s.id).map((p) => `<p>${p}</p>`).join('')}</div>`
+            : '');
+          document.body.appendChild(page);
+          paint(page.querySelector('.stage'), i, 99, { all: true });
+        });
         this.rendered = true;
       },
       step() {},
@@ -330,7 +428,10 @@
         const s = slides[idx];
         const ci = DECK.chapters.findIndex((c) => c.id === s.ch);
         const [from, to] = windowOf(ci);
-        root.querySelector('#pNotes').innerHTML = `<div class="ch">${idx + 1}/${slides.length} · ${DECK.t('ch.' + s.ch)} · step ${step}/${maxOf(idx)}</div>${DECK.t('n.' + s.id)}`;
+        const notesEl = root.querySelector('#pNotes');
+        notesEl.innerHTML = `<div class="ch">${idx + 1}/${slides.length} · ${DECK.t('ch.' + s.ch)} · step ${step}/${maxOf(idx)}</div>` +
+          noteParts(s.id).map((p, i) => `<p class="np ${i < step ? 'past' : i === step ? 'cur' : ''}">${i ? '<span class="click">→</span>' : ''}${p}</p>`).join('');
+        notesEl.querySelector('.np.cur')?.scrollIntoView({ block: 'nearest' });
         root.querySelector('#pChap').textContent = DECK.chapters[ci].min ? `${DECK.t('p.budget')}: ${DECK.chapters[ci].min} min · ${from}:00 → ${to}:00` : DECK.t('p.nobudget');
         root.querySelector('#pNextLbl').textContent = step < maxOf(idx) ? `${DECK.t('p.next')}: ${DECK.t('p.morestep')}` : `${DECK.t('p.next')}:`;
         tick();
@@ -349,6 +450,8 @@
     };
     setInterval(tick, 1000);
     onResize(root, doFit);
+    // Opened directly via ?presenter: the audience window goes back to steps too.
+    setTimeout(() => setAll(false), 300);
   }
 
   setUiText();
@@ -356,6 +459,7 @@
   document.querySelectorAll('[data-lang]').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
   window.addEventListener('hashchange', () => { const i = fromHash(); if (i != null && i !== idx) go(i); });
   view.render();
-  if (MODE === 'print') setTimeout(() => window.print(), 600);
+  if (MODE === 'show') syncUrl();
+  if (MODE === 'print') setTimeout(() => window.print(), 900);
   if (qs.has('debug')) DECK.checkI18n();
 })();

@@ -19,27 +19,45 @@ Serveer de root van de repo, niet de map van een deck: stijl en engine staan in 
 
 ## Presenteren
 
+Alle opties staan in het **☰-menu** rechtsboven (of druk op **?**), en ook op de laatste slide.
+
 | Toets | Actie |
 |---|---|
-| → / spatie / PageDown | volgende stap (eerst fragmenten, dan de volgende slide) |
+| → / spatie / PageDown | volgende stap (eerst de blokken van de slide, dan de volgende slide) |
 | ← / PageUp | vorige stap |
 | Home / End | eerste / laatste slide |
-| **P** | presenter view: notes, timer met budget, volgende slide |
+| **?** | menu |
+| **P** | presenter view: notes per klikstap, timer met budget, volgende slide |
+| **H** | handout-modus: alles meteen zichtbaar |
 | **O** | overzicht van alle slides |
 | **T** | licht / donker |
 | **B** of **.** | zwart scherm |
 | **F** | volledig scherm |
-| Esc | kaart / overzicht / zwart scherm sluiten |
+| Esc | menu / kaart / overzicht / zwart scherm sluiten |
 
 Klik op een `/skill` om zijn kaart te openen. Op tablet en telefoon: swipen om te navigeren.
 
+**Handout-modus** wordt onthouden in de browser; een geel label **Handout ✕** linksboven toont dat hij aanstaat (klik om uit te zetten).
+De presenter view openen zet hem in alle vensters uit.
+
+**PDF** opent een printvenster: kies *Opslaan als PDF*. *PDF: slides* geeft één liggende pagina per slide,
+*PDF: met notities* een staande pagina met de speaker notes onder elke slide. Beide altijd in het lichte thema.
+
 ### URL-opties
 
+Elke optie uit het menu werkt ook als link:
+
+- `?all`: handout-modus (wint van wat de browser onthouden heeft)
 - `?theme=dark`: start in het donkere thema
 - `#7` of `#build`: open op slide 7, of op de slide met die id
-- `?all`: alle fragmenten meteen zichtbaar (handout-modus)
-- `?print`: alle slides onder elkaar, dan het printvenster: bewaar als PDF op 1600×900
+- `?print` / `?print&notes`: de twee PDF-varianten
+- `?presenter`: de presenter view
 - `?debug`: toont ontbrekende vertalingen in de console
+
+### Speaker notes
+
+In `n.<slide-id>` in `i18n/nl.js`. `[→]` markeert waar een klik het volgende blok toont: de presenter view markeert de alinea
+van de huidige stap. Houd het aantal `[→]` gelijk aan het aantal klikstappen op de slide.
 
 ## Structuur
 

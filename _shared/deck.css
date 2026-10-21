@@ -259,9 +259,40 @@ body.presenter { overflow: auto; background: var(--bg); }
   #presenter .notes { font-size: 20px; }
 }
 
-/* ---------- print (?print) ---------- */
-body.print { overflow: visible; background: #fff; }
-body.print .stage { margin: 0 auto 20px; break-after: page; }
-@media print { @page { size: 1600px 900px; margin: 0; } body.print .stage { margin: 0; } }
+/* ---------- menu (☰ or ?) and the handout badge ---------- */
+#menu { position: fixed; top: calc(56px + env(safe-area-inset-top, 0px)); right: 16px; z-index: 45; }
+#menu[hidden] { display: none; }
+.menu-in { width: 320px; background: var(--panel); border: 1px solid var(--line); border-top: 6px solid var(--brand); border-radius: 4px; box-shadow: var(--shadow); padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 4px; animation: pop .2s ease-out both; }
+.menu-in .label { font-size: 12px; margin: 8px 6px 2px; }
+.menu-in .label:first-child { margin-top: 0; }
+.menu-in .hint { font-size: 13px; color: var(--fg-faint); margin: 8px 6px 0; line-height: 1.4; }
+.cmd { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: 4px; padding: 7px 10px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--fg); }
+.cmd:hover, .cmd:focus-visible { background: var(--bg-2); }
+.cmd.on span::after { content: " ✓"; color: var(--brand-ink); }
+kbd { font-family: var(--f-mono); font-size: 12px; font-weight: 600; color: var(--fg-dim); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; min-width: 22px; text-align: center; }
+/* Buttons on a slide use the same commands, laid out as a grid. */
+.cmds { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+.cmds .cmd { font-size: 18px; border-color: var(--line); padding: 9px 14px; }
+.cmds kbd { font-size: 14px; }
+#allBadge { position: fixed; z-index: 31; top: calc(14px + env(safe-area-inset-top, 0px)); left: 16px; background: var(--brand); color: #222; border: 0; border-radius: 4px; padding: 6px 12px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+#allBadge[hidden] { display: none; }
+
+/* ---------- presenter notes: one paragraph per click ---------- */
+#presenter .notes .np { margin: 0 0 12px; padding: 6px 12px; border-left: 4px solid transparent; border-radius: 2px; }
+#presenter .notes .np.past { color: var(--fg-faint); }
+#presenter .notes .np.cur { border-left-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+#presenter .notes .click { display: inline-block; font-size: .7em; font-weight: 800; color: #222; background: var(--brand); border-radius: 3px; padding: 0 6px; margin-right: 10px; vertical-align: .15em; }
+
+/* ---------- print (?print, ?print&notes) ---------- */
+body.print { overflow: visible; background: #e5e5e5; }
+body.print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body.print .page { width: 1600px; margin: 0 auto 24px; background: #fff; break-after: page; }
+body.print.with-notes .page { height: 2263px; page: notes; display: flex; flex-direction: column; }
+.print-notes { padding: 56px 96px; font-size: 30px; line-height: 1.5; color: #222; }
+.print-notes .ch { font-size: 18px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #8a8a8a; margin-bottom: 20px; padding-top: 18px; border-top: 6px solid var(--brand); width: fit-content; }
+.print-notes p { margin: 0 0 20px; }
+@page { size: 1600px 900px; margin: 0; }
+@page notes { size: 1600px 2263px; margin: 0; }
+@media print { body.print { background: #fff; } body.print .page { margin: 0; } }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; } }

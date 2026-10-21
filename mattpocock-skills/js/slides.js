@@ -236,7 +236,8 @@ Commit your work to the current branch.</pre>
           <span class="label">${t('src.books')}</span>
           ${[['The Pragmatic Programmer', 'David Thomas &amp; Andrew Hunt'], ['Domain-Driven Design', 'Eric Evans'], ['A Philosophy of Software Design', 'John Ousterhout'], ['Extreme Programming Explained', 'Kent Beck']].map(([b, by]) => `<p><b>${b}</b> <span class="dim">· ${by}</span></p>`).join('')}
           <span class="label" style="margin-top:14px">${t('src.keys')}</span>
-          <p class="small dim">${t('src.keysd')}</p>
+          <div class="cmds">${DECK.cmdButtons(['all', 'theme', 'overview', 'presenter', 'pdf', 'pdfnotes'])}</div>
+          <p class="xs dim">${t('src.keysd')}</p>
         </div>
       </div>` },
   ];
