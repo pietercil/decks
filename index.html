@@ -20,11 +20,17 @@
   h1 { font-size: clamp(36px, 6vw, 56px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 8px; }
   h1::before { content: ""; display: block; width: 80px; height: 8px; background: var(--brand); margin-bottom: 24px; }
   p.lead { color: var(--dim); font-size: 19px; margin: 0 0 40px; }
-  a.deck { display: block; text-decoration: none; color: inherit; border: 1px solid var(--line); border-top: 6px solid var(--brand); padding: 22px 24px; background: var(--bg); transition: background .2s; }
-  a.deck:hover { background: var(--bg-2); }
-  a.deck h2 { margin: 0 0 6px; font-size: 24px; }
-  a.deck p { margin: 0; color: var(--dim); }
-  a.deck span { display: inline-block; margin-top: 12px; font-weight: 700; color: var(--brand); }
+  .deck { border: 1px solid var(--line); border-top: 6px solid var(--brand); padding: 22px 24px; background: var(--bg); }
+  .deck h2 { margin: 0 0 6px; font-size: 24px; }
+  .deck h2 a { color: inherit; text-decoration: none; }
+  .deck h2 a:hover { text-decoration: underline; text-decoration-color: var(--brand); text-underline-offset: 4px; }
+  .deck p { margin: 0; color: var(--dim); }
+  .langs { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .langs a { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px solid var(--brand); border-radius: 999px; color: var(--fg); text-decoration: none; font-weight: 600; font-size: 15px; transition: background .2s; }
+  .langs a b { font-weight: 800; color: var(--brand); }
+  .langs a:hover, .langs a:focus-visible { background: var(--brand); color: #222; }
+  .langs a:hover b, .langs a:focus-visible b { color: #222; }
+  :focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
 </style>
 </head>
 <body>
@@ -32,12 +38,15 @@
 <main>
   <h1>Decks</h1>
   <p class="lead">Presentaties en handleidingen.</p>
-  <a class="deck" href="mattpocock-skills/">
-    <h2>Skills for Real Engineers</h2>
+  <div class="deck">
+    <h2><a href="mattpocock-skills/">Skills for Real Engineers</a></h2>
     <p>De agent skills van Matt Pocock, van idee tot onderhoud: een overzicht van tien minuten en een naslag met elke skill.</p>
-    <p lang="en" style="margin-top:6px">Matt Pocock’s agent skills, from idea to maintenance: a ten-minute overview and a reference with every skill. Nederlands &amp; English.</p>
-    <span>Openen →</span>
-  </a>
+    <p lang="en" style="margin-top:6px">Matt Pocock’s agent skills, from idea to maintenance: a ten-minute overview and a reference with every skill.</p>
+    <div class="langs">
+      <a href="mattpocock-skills/?lang=nl" hreflang="nl"><b>NL</b> Nederlands →</a>
+      <a href="mattpocock-skills/?lang=en" hreflang="en" lang="en"><b>EN</b> English →</a>
+    </div>
+  </div>
 </main>
 <script>window.DECK = {}; window.I18N = { nl: {} };</script>
 <script src="_shared/helpers.js"></script>
