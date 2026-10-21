@@ -1,0 +1,359 @@
+// Deck engine: routing, fragments, i18n, presenter view, overview, skill cards, print, sync between windows.
+(function () {
+  const LANGS = Object.keys(I18N);
+  const W = 1600, H = 900;
+  const qs = new URLSearchParams(location.search);
+  const MODE = qs.has('presenter') ? 'presenter' : qs.has('print') ? 'print' : 'show';
+  // Everything a viewer's browser remembers is namespaced per deck, so two decks on one origin stay independent.
+  const NS = 'deck.' + (DECK.id || 'default') + '.';
+  const store = {
+    get(k) { try { return localStorage.getItem(NS + k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(NS + k, v); } catch (e) { /* storage unavailable */ } },
+  };
+
+  // ---------- i18n ----------
+  // The deck's languages are whatever i18n files it loads; the first one is the fallback.
+  const BASE = LANGS[0];
+  const missing = new Set();
+  const fromBrowser = (navigator.languages || [navigator.language || BASE])
+    .map((l) => String(l).toLowerCase().split('-')[0])
+    .find((l) => LANGS.includes(l));
+  let lang = qs.get('lang') || store.get('lang') || fromBrowser || BASE;
+  if (!LANGS.includes(lang)) lang = BASE;
+
+  DECK.t = (k) => {
+    const v = (I18N[lang] || {})[k];
+    if (v != null) return v;
+    if (!missing.has(lang + ':' + k)) { missing.add(lang + ':' + k); console.warn(`[deck] missing ${lang}: ${k}`); }
+    return I18N[BASE][k] != null ? I18N[BASE][k] : `⟨${k}⟩`;
+  };
+  DECK.checkI18n = () => {
+    const base = Object.keys(I18N[BASE]);
+    LANGS.forEach((l) => {
+      const keys = Object.keys(I18N[l] || {});
+      console.log(`[deck] ${l}: ${keys.length} keys, missing`, base.filter((k) => !keys.includes(k)), 'extra', keys.filter((k) => !base.includes(k)));
+    });
+  };
+
+  // ---------- state ----------
+  const slides = DECK.slides;
+  // A hash is a slide number (#7) or a slide id (#map).
+  const fromHash = () => {
+    const h = decodeURIComponent(location.hash.slice(1));
+    if (/^\d+$/.test(h)) return Math.min(slides.length - 1, Math.max(0, +h - 1));
+    const i = slides.findIndex((s) => s.id === h);
+    return i >= 0 ? i : null;
+  };
+  let idx = fromHash() ?? 0;
+  let step = 0;
+  const maxCache = {};
+  const maxOf = (i) => {
+    if (maxCache[i] == null) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = slides[i].render(slides[i]);
+      maxCache[i] = Math.max(0, ...[...tmp.querySelectorAll('[data-f]')].map((el) => +el.dataset.f));
+    }
+    return maxCache[i];
+  };
+
+  // ---------- rendering ----------
+  function paint(stageEl, i, st, opts = {}) {
+    const s = slides[i];
+    if (qs.has('all')) { opts = { all: true }; st = 99; }
+    stageEl.style.setProperty('--c', `var(--st-${s.stage || 'core'})`);
+    stageEl.innerHTML = `<section class="slide ${s.cls || ''}" data-id="${s.id}">${s.render(s)}</section>`;
+    stageEl.classList.toggle('all', !!opts.all);
+    stageEl.classList.toggle('dark-slide', !!s.dark);
+    applyStep(stageEl, opts.all ? 99 : st);
+  }
+  function applyStep(stageEl, st) {
+    stageEl.querySelectorAll('[data-f]').forEach((el) => el.classList.toggle('on', +el.dataset.f <= st));
+  }
+  function fit(stageEl, box) {
+    const r = box.getBoundingClientRect();
+    stageEl.style.transform = `translate(-50%, -50%) scale(${Math.min(r.width / W, r.height / H)})`;
+  }
+  // Re-run fn whenever el changes size (window resize, rotation, fullscreen, mobile URL bar).
+  function onResize(el, fn) {
+    if (window.ResizeObserver) new ResizeObserver(() => fn()).observe(el);
+    else window.addEventListener('resize', fn);
+  }
+
+  // ---------- sync between windows ----------
+  let bc = null;
+  try { bc = new BroadcastChannel(NS + 'sync'); } catch (e) { /* not supported */ }
+  function send(msg) {
+    if (bc) bc.postMessage(msg);
+    store.set('sync', JSON.stringify({ ...msg, ts: Date.now() }));
+  }
+  function receive(msg) {
+    if (!msg) return;
+    if (msg.type === 'nav' && (msg.idx !== idx || msg.step !== step)) go(msg.idx, msg.step, false);
+    if (msg.type === 'lang' && msg.lang !== lang) setLang(msg.lang, false);
+  }
+  if (bc) bc.onmessage = (e) => receive(e.data);
+  window.addEventListener('storage', (e) => { if (e.key === NS + 'sync' && e.newValue) receive(JSON.parse(e.newValue)); });
+
+  // ---------- navigation ----------
+  let view = null; // set per mode
+  function go(i, st = 0, broadcast = true) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    const changed = i !== idx;
+    idx = i; step = Math.max(0, Math.min(st, maxOf(i)));
+    if (changed || !view.rendered) view.render(); else view.step();
+    if (MODE === 'show') history.replaceState(null, '', location.pathname + location.search + '#' + (idx + 1));
+    if (broadcast) send({ type: 'nav', idx, step });
+  }
+  const next = () => (step < maxOf(idx) ? go(idx, step + 1) : idx < slides.length - 1 && go(idx + 1, 0));
+  const prev = () => (step > 0 ? go(idx, step - 1) : idx > 0 && go(idx - 1, maxOf(idx - 1)));
+
+  function setLang(l, broadcast = true) {
+    lang = l; store.set('lang', l);
+    document.documentElement.lang = l;
+    document.querySelectorAll('[data-lang]').forEach((b) => b.classList.toggle('on', b.dataset.lang === l));
+    setUiText();
+    view.render();
+    if (broadcast) send({ type: 'lang', lang: l });
+  }
+
+  // Light is the default; dark only when chosen (T, the button, or ?theme=dark).
+  function toggleTheme() {
+    const root = document.documentElement;
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    store.set('theme', root.dataset.theme);
+  }
+  const savedTheme = ['light', 'dark'].includes(qs.get('theme')) ? qs.get('theme') : store.get('theme');
+  if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+
+  // ---------- skill card modal ----------
+  function openSkill(id, stageEl) {
+    const s = DECK.skills[id]; if (!s) return;
+    closeModal(stageEl);
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-wrap';
+    wrap.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-label="/${id}" style="--c:var(--st-${s.stage})">
+      ${DECK.h.card(id, { close: true })}</div>`;
+    stageEl.appendChild(wrap);
+    wrap.querySelector('[data-action="close"]').focus();
+  }
+  function closeModal(stageEl) {
+    const m = (stageEl || document).querySelectorAll('.modal-wrap');
+    m.forEach((x) => x.remove());
+    return m.length > 0;
+  }
+
+  // ---------- in-slide actions (event delegation) ----------
+  document.addEventListener('click', (e) => {
+    const stageEl = e.target.closest('.stage');
+    const chipEl = e.target.closest('.chip[data-skill]');
+    if (chipEl && stageEl && !e.target.closest('#overview')) { e.stopPropagation(); openSkill(chipEl.dataset.skill, stageEl); return; }
+    if (e.target.classList.contains('modal-wrap') || e.target.closest('[data-action="close"]')) { closeModal(stageEl); return; }
+    const gotoEl = e.target.closest('[data-goto]');
+    if (gotoEl && !e.target.closest('#overview')) { const i = slides.findIndex((s) => s.id === gotoEl.dataset.goto); if (i >= 0) go(i); }
+  });
+
+  // ---------- keyboard ----------
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key;
+    if (k === 'Escape') {
+      if (closeModal()) return;
+      if (ov && !ov.hidden) return toggleOverview(false);
+      if (blackout && !blackout.hidden) blackout.hidden = true;
+      return;
+    }
+    const tgt = e.target instanceof Element ? e.target : document.body;
+    if ([' ', 'Enter'].includes(k) && tgt.closest('button,[role=button],a')) return; // let the focused control handle it
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); closeModal(); next(); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); closeModal(); prev(); }
+    else if (k === 'Home') go(0);
+    else if (k === 'End') go(slides.length - 1);
+    else if ((k === 'l' || k === 'L') && LANGS.length > 1) setLang(LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length]);
+    else if (k === 't' || k === 'T') toggleTheme();
+    else if ((k === 'o' || k === 'O') && MODE === 'show') toggleOverview();
+    else if ((k === 'p' || k === 'P') && MODE === 'show') openPresenter();
+    else if ((k === 'b' || k === 'B' || k === '.') && MODE === 'show') blackout.hidden = !blackout.hidden;
+    else if (k === 'f' || k === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); }
+    else if ((k === 'r' || k === 'R') && MODE === 'presenter') resetTimer();
+  });
+
+  // ---------- chrome ----------
+  const topbar = document.getElementById('topbar');
+  if (LANGS.length > 1) {
+    topbar.insertAdjacentHTML('afterbegin', LANGS.map((l) => `<button data-lang="${l}">${l.toUpperCase()}</button>`).join(''));
+    topbar.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
+  }
+  function setUiText() {
+    const set = (id, k, attr) => { const el = document.getElementById(id); if (el) el[attr || 'textContent'] = DECK.t(k); };
+    set('rotateTxt', 'ui.rotate');
+    set('themeBtn', 'ui.theme', 'title'); set('ovBtn', 'ui.overview', 'title'); set('prBtn', 'ui.presenter', 'title');
+    set('pPrev', 'p.prev'); set('pNext', 'p.nextbtn'); set('pReset', 'p.reset');
+  }
+  const ov = document.getElementById('overview');
+  const blackout = document.getElementById('blackout');
+  document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+  document.getElementById('ovBtn').addEventListener('click', () => toggleOverview());
+  document.getElementById('prBtn').addEventListener('click', openPresenter);
+  document.getElementById('prevBtn').addEventListener('click', prev);
+  document.getElementById('nextBtn').addEventListener('click', next);
+  blackout.addEventListener('click', () => { blackout.hidden = true; });
+
+  let idleT;
+  const wake = () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 2500); };
+  document.addEventListener('mousemove', wake);
+  document.addEventListener('pointerdown', wake); wake();
+
+  function openPresenter() {
+    const w = window.open(location.pathname + '?presenter&lang=' + lang + '#' + (idx + 1), 'deck-presenter', 'width=1400,height=900');
+    if (!w) console.warn('[deck] presenter window blocked: allow pop-ups or open ?presenter manually');
+    setTimeout(() => send({ type: 'nav', idx, step }), 800);
+  }
+
+  function buildProgress() {
+    const bar = document.getElementById('progress');
+    bar.innerHTML = DECK.chapters.map((c) => {
+      const n = slides.filter((s) => s.ch === c.id).length;
+      return `<div class="seg" data-ch="${c.id}" style="--w:${n}" title="${DECK.t('ch.' + c.id)}"><i></i></div>`;
+    }).join('');
+    bar.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click', () => go(slides.findIndex((s) => s.ch === seg.dataset.ch))));
+  }
+  function updateProgress() {
+    const cur = slides[idx];
+    const ci = DECK.chapters.findIndex((c) => c.id === cur.ch);
+    document.querySelectorAll('#progress .seg').forEach((seg, i) => {
+      const inCh = slides.filter((s) => s.ch === seg.dataset.ch);
+      seg.querySelector('i').style.setProperty('--p', i < ci ? '100%' : i > ci ? '0%' : ((inCh.indexOf(cur) + 1) / inCh.length) * 100 + '%');
+    });
+    document.getElementById('count').textContent = `${idx + 1} / ${slides.length}`;
+  }
+
+  function toggleOverview(force) {
+    const show = force != null ? force : ov.hidden;
+    ov.hidden = !show;
+    if (!show) return;
+    ov.innerHTML = `<div class="og">${slides.map((s, i) => `<div class="th ${i === idx ? 'cur' : ''}" data-i="${i}"><div class="stage"></div><span class="n">${i + 1} · ${DECK.t('ch.' + s.ch)}</span></div>`).join('')}</div>`;
+    ov.querySelectorAll('.th').forEach((th) => {
+      const st = th.querySelector('.stage');
+      paint(st, +th.dataset.i, 99, { all: true });
+      st.style.transform = `scale(${th.clientWidth / W})`;
+      th.addEventListener('click', () => { toggleOverview(false); go(+th.dataset.i); });
+    });
+    ov.querySelector('.th.cur')?.scrollIntoView({ block: 'center' });
+  }
+  onResize(ov, () => {
+    if (!ov.hidden) ov.querySelectorAll('.th').forEach((th) => { th.querySelector('.stage').style.transform = `scale(${th.clientWidth / W})`; });
+  });
+
+  // ---------- views ----------
+  let startTime = +store.get('start') || Date.now();
+  function resetTimer() { startTime = Date.now(); store.set('start', startTime); }
+
+  if (MODE === 'show') {
+    const stageEl = document.getElementById('stage');
+    const vp = document.getElementById('viewport');
+    view = {
+      render() { paint(stageEl, idx, step); document.body.classList.toggle('on-dark', !!slides[idx].dark); this.rendered = true; buildProgress(); updateProgress(); },
+      step() { applyStep(stageEl, step); updateProgress(); },
+    };
+    const doFit = () => fit(stageEl, vp);
+    onResize(vp, doFit); doFit();
+
+    // Swipe left/right to navigate; gestures that start on interactive elements are left alone.
+    let sw = null;
+    vp.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' || e.target.closest('button,a,[role=button],.modal-wrap')) { sw = null; return; }
+      sw = { x: e.clientX, y: e.clientY, t: Date.now() };
+    });
+    vp.addEventListener('pointerup', (e) => {
+      if (!sw) return;
+      const dx = e.clientX - sw.x, dy = e.clientY - sw.y, quick = Date.now() - sw.t < 800;
+      sw = null;
+      if (quick && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { closeModal(); dx < 0 ? next() : prev(); }
+    });
+    vp.addEventListener('pointercancel', () => { sw = null; });
+
+    // Portrait phones: suggest rotating (dismissible, remembered per browser).
+    const rot = document.getElementById('rotate');
+    if (store.get('rotateDismissed') !== '1') rot.hidden = false;
+    document.getElementById('rotateBtn').addEventListener('click', () => { rot.hidden = true; store.set('rotateDismissed', '1'); });
+  }
+
+  if (MODE === 'print') {
+    document.body.classList.add('print');
+    document.querySelectorAll('.chrome,#progress,#viewport').forEach((el) => el.remove());
+    view = {
+      render() {
+        document.querySelectorAll('body > .stage').forEach((el) => el.remove());
+        slides.forEach((_, i) => { const st = document.createElement('div'); st.className = 'stage'; document.body.appendChild(st); paint(st, i, 99, { all: true }); });
+        this.rendered = true;
+      },
+      step() {},
+    };
+  }
+
+  if (MODE === 'presenter') {
+    document.body.classList.add('presenter');
+    ['viewport', 'navbar', 'progress', 'ovBtn', 'prBtn'].forEach((id) => document.getElementById(id).remove());
+    const root = document.createElement('div');
+    root.id = 'presenter';
+    root.innerHTML = `
+      <div class="pv" id="pvCur"><div class="stage"></div></div>
+      <div class="side">
+        <div class="clock"><span class="big" id="pClock">00:00</span><span class="pace" id="pPace"></span></div>
+        <div class="dim mono small" id="pChap"></div>
+        <div class="pbtns"><button class="btn" id="pPrev"></button><button class="btn" id="pNext"></button><button class="btn" id="pReset"></button></div>
+        <span class="nextlbl" id="pNextLbl"></span>
+        <div class="pv" id="pvNext" style="width:70%"><div class="stage"></div></div>
+      </div>
+      <div class="notes" id="pNotes"></div>`;
+    document.body.prepend(root);
+    root.querySelector('#pPrev').onclick = prev;
+    root.querySelector('#pNext').onclick = next;
+    root.querySelector('#pReset').onclick = resetTimer;
+    const cur = root.querySelector('#pvCur .stage'), nxt = root.querySelector('#pvNext .stage');
+    const doFit = () => { [cur, nxt].forEach((s) => { s.style.transform = `scale(${s.parentElement.clientWidth / W})`; }); };
+    // A chapter's window on the clock: the minutes of every chapter before it, then its own.
+    const windowOf = (ci) => {
+      const from = DECK.chapters.slice(0, ci).reduce((a, c) => a + c.min, 0);
+      return [from, from + DECK.chapters[ci].min];
+    };
+    view = {
+      render() {
+        paint(cur, idx, step);
+        if (idx < slides.length - 1) paint(nxt, idx + 1, 0); else nxt.innerHTML = '';
+        doFit(); this.rendered = true; this.step();
+      },
+      step() {
+        applyStep(cur, step);
+        const s = slides[idx];
+        const ci = DECK.chapters.findIndex((c) => c.id === s.ch);
+        const [from, to] = windowOf(ci);
+        root.querySelector('#pNotes').innerHTML = `<div class="ch">${idx + 1}/${slides.length} · ${DECK.t('ch.' + s.ch)} · step ${step}/${maxOf(idx)}</div>${DECK.t('n.' + s.id)}`;
+        root.querySelector('#pChap').textContent = DECK.chapters[ci].min ? `${DECK.t('p.budget')}: ${DECK.chapters[ci].min} min · ${from}:00 → ${to}:00` : DECK.t('p.nobudget');
+        root.querySelector('#pNextLbl').textContent = step < maxOf(idx) ? `${DECK.t('p.next')}: ${DECK.t('p.morestep')}` : `${DECK.t('p.next')}:`;
+        tick();
+      },
+    };
+    const tick = () => {
+      const el = (Date.now() - startTime) / 1000;
+      root.querySelector('#pClock').textContent = `${String(Math.floor(el / 60)).padStart(2, '0')}:${String(Math.floor(el % 60)).padStart(2, '0')}`;
+      const ci = DECK.chapters.findIndex((c) => c.id === slides[idx].ch);
+      const [from, to] = windowOf(ci).map((m) => m * 60);
+      const pace = root.querySelector('#pPace');
+      if (!DECK.chapters[ci].min) { pace.className = 'pace'; pace.textContent = ''; }
+      else if (el > to) { pace.className = 'pace behind'; pace.textContent = `${DECK.t('p.behind')} ${Math.ceil((el - to) / 60)} min`; }
+      else if (el < from) { pace.className = 'pace ahead'; pace.textContent = `${DECK.t('p.ahead')} ${Math.floor((from - el) / 60)} min`; }
+      else { pace.className = 'pace ahead'; pace.textContent = DECK.t('p.ontime'); }
+    };
+    setInterval(tick, 1000);
+    onResize(root, doFit);
+  }
+
+  setUiText();
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-lang]').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
+  window.addEventListener('hashchange', () => { const i = fromHash(); if (i != null && i !== idx) go(i); });
+  view.render();
+  if (MODE === 'print') setTimeout(() => window.print(), 600);
+  if (qs.has('debug')) DECK.checkI18n();
+})();

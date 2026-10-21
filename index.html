@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decks</title>
+<link rel="icon" href="_shared/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap">
+<style>
+  :root { --brand: #eca900; --fg: #222; --dim: #545454; --line: #d9d9d9; --bg: #fff; --bg-2: #f3f3f3; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #f3f3f3; --dim: #c4c4c4; --line: #404040; --bg: #1b1b1b; --bg-2: #222; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: Manrope, system-ui, sans-serif; }
+  header { background: #222; color: #fff; padding: 28px 16px; }
+  header .in, main { max-width: 960px; margin: 0 auto; }
+  header svg { height: 32px; display: block; }
+  main { padding: 48px 16px 80px; }
+  h1 { font-size: clamp(36px, 6vw, 56px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 8px; }
+  h1::before { content: ""; display: block; width: 80px; height: 8px; background: var(--brand); margin-bottom: 24px; }
+  p.lead { color: var(--dim); font-size: 19px; margin: 0 0 40px; }
+  a.deck { display: block; text-decoration: none; color: inherit; border: 1px solid var(--line); border-top: 6px solid var(--brand); padding: 22px 24px; background: var(--bg); transition: background .2s; }
+  a.deck:hover { background: var(--bg-2); }
+  a.deck h2 { margin: 0 0 6px; font-size: 24px; }
+  a.deck p { margin: 0; color: var(--dim); }
+  a.deck span { display: inline-block; margin-top: 12px; font-weight: 700; color: var(--brand); }
+</style>
+</head>
+<body>
+<header><div class="in" id="logo"></div></header>
+<main>
+  <h1>Decks</h1>
+  <p class="lead">Presentaties en handleidingen.</p>
+  <a class="deck" href="mattpocock-skills/">
+    <h2>Skills for Real Engineers</h2>
+    <p>De agent skills van Matt Pocock, van idee tot onderhoud: een overzicht van tien minuten en een naslag met elke skill.</p>
+    <span>Openen →</span>
+  </a>
+</main>
+<script>window.DECK = {}; window.I18N = { nl: {} };</script>
+<script src="_shared/helpers.js"></script>
+<script>document.getElementById('logo').innerHTML = DECK.h.logo(32).replace('var(--brand)', '#eca900');</script>
+</body>
+</html>
