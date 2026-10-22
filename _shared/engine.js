@@ -21,11 +21,13 @@
   let lang = qs.get('lang') || store.get('lang') || fromBrowser || BASE;
   if (!LANGS.includes(lang)) lang = BASE;
 
+  // [[id]] or [[id|label]] in a string becomes a clickable term (DECK.h.term).
+  const terms = (v) => (typeof v === 'string' && v.includes('[[') ? v.replace(/\[\[([a-z-]+)(?:\|([^\]]+))?\]\]/g, (_, id, label) => DECK.h.term(id, label)) : v);
   DECK.t = (k) => {
     const v = (I18N[lang] || {})[k];
-    if (v != null) return v;
+    if (v != null) return terms(v);
     if (!missing.has(lang + ':' + k)) { missing.add(lang + ':' + k); console.warn(`[deck] missing ${lang}: ${k}`); }
-    return I18N[BASE][k] != null ? I18N[BASE][k] : `⟨${k}⟩`;
+    return I18N[BASE][k] != null ? terms(I18N[BASE][k]) : `⟨${k}⟩`;
   };
   DECK.checkI18n = () => {
     const base = Object.keys(I18N[BASE]);
@@ -163,6 +165,26 @@
     stageEl.appendChild(wrap);
     wrap.querySelector('[data-action="close"]').focus();
   }
+  // ---------- term dialog: what a word means, where it comes from, which skills use it ----------
+  function openTerm(id, stageEl) {
+    const tm = (DECK.terms || {})[id]; if (!tm) return;
+    const t = DECK.t;
+    closeModal(stageEl);
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-wrap';
+    wrap.innerHTML = `<div class="modal term-modal" role="dialog" aria-modal="true" aria-label="${t('term.' + id + '.name').replace(/<[^>]+>/g, '')}" style="--c:var(--gold)">
+      <div class="card">
+        <div class="top"><h3>${t('term.' + id + '.name')}</h3><span class="tag">${t('modal.term')}</span><button class="btn" data-action="close">${t('modal.close')} ✕</button></div>
+        <p class="purpose">${t('term.' + id + '.def')}</p>
+        <dl>
+          <dt>${t('modal.origin')}</dt><dd>${t('term.' + id + '.origin')}</dd>
+          ${tm.skills.length ? `<dt>${t('modal.skills')}</dt><dd>${tm.skills.map((s) => DECK.chip(s)).join('')}</dd>` : ''}
+          ${tm.src ? `<dt>${t('modal.src')}</dt><dd><a href="${tm.src}" target="_blank" rel="noopener">${tm.srcLabel} ↗</a></dd>` : ''}
+        </dl>
+      </div></div>`;
+    stageEl.appendChild(wrap);
+    wrap.querySelector('[data-action="close"]').focus();
+  }
   function closeModal(stageEl) {
     const m = (stageEl || document).querySelectorAll('.modal-wrap');
     m.forEach((x) => x.remove());
@@ -225,6 +247,8 @@
     if (cmdEl && !e.target.closest('#overview')) { e.stopPropagation(); runCmd(cmdEl.dataset.cmd); return; }
     if (!menu.hidden && !e.target.closest('#menu') && !e.target.closest('#menuBtn')) toggleMenu(false);
     const stageEl = e.target.closest('.stage');
+    const termEl = e.target.closest('.term[data-term]');
+    if (termEl && stageEl && !e.target.closest('#overview')) { e.stopPropagation(); openTerm(termEl.dataset.term, stageEl); return; }
     const chipEl = e.target.closest('.chip[data-skill]');
     if (chipEl && stageEl && !e.target.closest('#overview')) { e.stopPropagation(); openSkill(chipEl.dataset.skill, stageEl); return; }
     if (e.target.classList.contains('modal-wrap') || e.target.closest('[data-action="close"]')) { closeModal(stageEl); return; }

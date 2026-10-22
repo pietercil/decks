@@ -36,7 +36,7 @@ Alle opties staan in het **☰-menu** rechtsboven (of druk op **?**), en ook op 
 | **L** | taal wisselen (NL / EN) |
 | Esc | menu / kaart / overzicht / zwart scherm sluiten |
 
-Klik op een `/skill` om zijn kaart te openen. Op tablet en telefoon: swipen om te navigeren.
+Klik op een `/skill` om zijn kaart te openen, en op een gestippeld onderlijnd begrip voor zijn uitleg (alle begrippen staan ook op de slides *Begrippen* in de naslag). Op tablet en telefoon: swipen om te navigeren.
 
 **Handout-modus** wordt onthouden in de browser; een geel label **Handout ✕** linksboven toont dat hij aanstaat (klik om uit te zetten).
 De presenter view openen zet hem in alle vensters uit.
@@ -69,6 +69,7 @@ van de huidige stap. Houd het aantal `[→]` gelijk aan het aantal klikstappen o
 | Slideteksten en speaker notes (`n.<slide-id>`) | `<deck>/i18n/nl.js`, `<deck>/i18n/en.js` (zelfde sleutels) |
 | Slide-opbouw en tijdsbudget per hoofdstuk | `<deck>/js/slides.js` |
 | Skills: fase, wie start hem, wat roept hij aan | `mattpocock-skills/js/skills.js` |
+| Begrippen: skills en bronlink | `DECK.terms` in `mattpocock-skills/js/skills.js`; tekst in `term.<id>.*`, en `[[id]]` of `[[id\|label]]` in eender welke tekst maakt er een klikbaar begrip van |
 
 Een taal toevoegen: maak `i18n/fr.js` met dezelfde sleutels en laad het in `index.html`. De taalknoppen verschijnen dan vanzelf.
 Pas na een wijziging het `?v=`-nummer op de script- en stylesheet-tags aan, zodat browsers geen oude kopie tonen.

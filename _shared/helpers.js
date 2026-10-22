@@ -16,6 +16,8 @@
     return `<button class="chip ${s.invoker === 'model' ? 'model' : ''} ${cls}" data-skill="${id}" style="--c:var(--st-${s.stage})">/${id}</button>`;
   };
   const chips = (ids, cls) => ids.map((id) => chip(id, cls)).join('');
+  // A clickable term that opens its explanation (DECK.terms); the label defaults to the term's own name.
+  const term = (id, label, cls = '') => `<button class="term ${cls}" data-term="${id}">${label || t('term.' + id + '.name')}</button>`;
   const eyebrow = (s) => `<div class="eyebrow">${t('ch.' + s.ch)}</div>`;
   const head = (s) => `${eyebrow(s)}<h2>${t(s.id + '.title')}</h2>`;
   const li = (keys) => keys.map((k) => `<li>${t(k)}</li>`).join('');
@@ -57,5 +59,5 @@
   };
 
   DECK.chip = chip;
-  DECK.h = { t, logo, mark, chip, chips, eyebrow, head, li, map, card };
+  DECK.h = { t, logo, mark, chip, chips, term, eyebrow, head, li, map, card };
 })();

@@ -55,3 +55,24 @@ DECK.mapUnder = {
   vocab: ['grilling', 'domain-modeling', 'codebase-design'],
   hand:  ['setup-matt-pocock-skills', 'ask-matt', 'handoff', 'wait-what', 'teach', 'writing-for-agents'],
 };
+
+// Terms that open an explanation dialog. Text lives in i18n under term.<id>.name / .def / .origin;
+// in any i18n string, [[id]] or [[id|label]] turns into a clickable term.
+DECK.terms = {
+  'materialization-cascade': { skills: ['grill-with-docs', 'domain-modeling'],
+    src: 'https://github.com/mattpocock/course-video-manager/blob/076a5a7a182db0fe1e62971dd7a68bcadf010f1c/CONTEXT.md', srcLabel: 'course-video-manager · CONTEXT.md' },
+  'ubiquitous-language': { skills: ['grill-with-docs', 'domain-modeling'] },
+  'tracer-bullets':      { skills: ['to-tickets'] },
+  'deep-modules':        { skills: ['codebase-design', 'improve-codebase-architecture'] },
+  'seam':                { skills: ['codebase-design', 'implement', 'tdd'] },
+  'adr':                 { skills: ['grill-with-docs', 'domain-modeling'],
+    src: 'https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions', srcLabel: 'Michael Nygard · Documenting Architecture Decisions' },
+  'red-green-refactor':  { skills: ['tdd', 'implement'] },
+  'vertical-slice':      { skills: ['to-tickets', 'tdd'] },
+  'door':                { skills: ['pr'] },
+  'ball-of-mud':         { skills: ['improve-codebase-architecture', 'codebase-design'], src: 'http://www.laputan.org/mud/', srcLabel: 'Foote & Yoder · Big Ball of Mud' },
+  'software-entropy':    { skills: ['improve-codebase-architecture'] },
+  'context-window':      { skills: ['handoff', 'implement'], src: 'https://www.aihero.dev/ai-coding-dictionary/smart-zone', srcLabel: 'AI Hero · smart zone' },
+  'subagent':            { skills: ['code-review', 'implement-spec', 'research'] },
+  'afk-hitl':            { skills: ['wayfinder', 'wizard'] },
+};

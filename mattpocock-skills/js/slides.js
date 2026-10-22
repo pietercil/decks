@@ -1,7 +1,7 @@
 // Slide definitions. All visible text comes from i18n via t(); skill names, commands and book titles stay untranslated.
 (function () {
   const t = (k) => DECK.t(k);
-  const { logo, mark, chip, chips, eyebrow, head, li, map, card } = DECK.h;
+  const { logo, mark, chip, chips, term, eyebrow, head, li, map, card } = DECK.h;
   DECK.id = 'mattpocock-skills';
 
   // ---------- chapters (minutes = time budget; the reference part is not presented) ----------
@@ -17,6 +17,16 @@
     id, ch: 'ref', stage, cls: 'ref-slide', render: (s) => `
       ${eyebrow(s)}<h2 style="font-size:40px">${t(id + '.title')}</h2>
       <div class="ref fill">${ids.map((k) => card(k, { compact: true })).join('')}${extra()}</div>` });
+
+  const plain = (h) => h.replace(/<[^>]+>/g, '').replace(/[^\p{L}\p{N} /]/gu, '').trim().toLowerCase();
+  const gloss = (id, part) => ({
+    id, ch: 'ref', stage: 'core', render: (s) => {
+      const ids = Object.keys(DECK.terms).sort((a, b) => plain(t('term.' + a + '.name')).localeCompare(plain(t('term.' + b + '.name'))));
+      const half = Math.ceil(ids.length / 2);
+      return `${eyebrow(s)}<h2 style="font-size:40px">${t('gloss.title')} <span class="faint">${part}/2</span></h2>
+        <div class="gloss fill">${(part === 1 ? ids.slice(0, half) : ids.slice(half)).map((k) => `
+          <div class="g"><b>${term(k)}</b><p>${t('term.' + k + '.def')}</p><span>${t('term.' + k + '.origin')}</span></div>`).join('')}</div>`;
+    } });
 
   DECK.slides = [
     // ===== Why =====
@@ -71,11 +81,11 @@ Commit your work to the current branch.</pre>
         </div>
       </div>
       <div class="grid g3" data-f="4" style="gap:16px">
-        ${[['The Pragmatic Programmer', 'Hunt &amp; Thomas', 'tracer bullets', 'to-tickets'],
-           ['Domain-Driven Design', 'Eric Evans', 'ubiquitous language', 'domain-modeling'],
-           ['A Philosophy of Software Design', 'John Ousterhout', 'deep modules', 'codebase-design']].map(([b, by, idea, id]) => `
+        ${[['The Pragmatic Programmer', 'Hunt &amp; Thomas', 'tracer-bullets', 'to-tickets'],
+           ['Domain-Driven Design', 'Eric Evans', 'ubiquitous-language', 'domain-modeling'],
+           ['A Philosophy of Software Design', 'John Ousterhout', 'deep-modules', 'codebase-design']].map(([b, by, idea, id]) => `
           <div class="panel soft" style="padding:14px 18px;gap:6px;flex-direction:row;align-items:center;justify-content:space-between">
-            <div><b style="font-size:19px">${b}</b><div class="xs dim">${by} · <i>${idea}</i></div></div>${chip(id, 'sm')}
+            <div><b style="font-size:19px">${b}</b><div class="xs dim">${by} · <i>${term(idea)}</i></div></div>${chip(id, 'sm')}
           </div>`).join('')}
       </div>` },
 
@@ -95,7 +105,11 @@ Commit your work to the current branch.</pre>
         </div>
         <div class="stack" style="gap:16px">
           <div class="panel soft" data-f="1" style="gap:10px">
-            <div class="row" style="justify-content:space-between"><span class="label">GLOSSARY.md</span><span class="tag concept">ubiquitous language</span></div>
+            <div class="row" style="justify-content:space-between"><span class="label">GLOSSARY.md · course-video-manager</span>${term('ubiquitous-language', '', 'tag concept')}</div>
+            <div class="file" style="font-size:13.5px;line-height:1.45"><pre><span class="k">**Ghost Lesson**</span>: A lesson that exists in the database but not yet on the file system.
+<span class="c">_Avoid_: Planned lesson, Draft lesson</span>
+
+<span class="k">**Materialization Cascade**</span>: The chain reaction when materializing a lesson inside a ghost course: assigns file path to course, materializes section, then materializes lesson.</pre></div>
             <p class="small"><span class="faint">${t('grill.before')}</span> ${t('grill.b')}</p>
             <p class="small"><span class="faint">${t('grill.after')}</span> <b>${t('grill.a')}</b></p>
             <p class="xs dim">${t('grill.gain')}</p>
@@ -143,7 +157,7 @@ Commit your work to the current branch.</pre>
       ${head(s)}
       <div class="flow">
         <div class="step" style="--c:var(--st-planning)">${chip('to-spec', 'big')}<p>${t('build.spec')}</p></div>
-        <div class="step" style="--c:var(--st-planning)">${chip('to-tickets', 'big')}<p>${t('build.tickets')}</p><span class="tag concept" style="align-self:flex-start">tracer bullets</span></div>
+        <div class="step" style="--c:var(--st-planning)">${chip('to-tickets', 'big')}<p>${t('build.tickets')}</p><span style="align-self:flex-start">${term('tracer-bullets', '', 'tag concept')}</span></div>
         <div class="step" style="--c:var(--st-development);flex:1.5">
           <span class="label">${t('build.two')}</span>
           <div class="row" style="gap:10px">${chip('implement')}<span class="xs dim">${t('build.impl')}</span></div>
@@ -164,7 +178,7 @@ Commit your work to the current branch.</pre>
             <span class="label" style="color:var(--st-maintenance)">${t(k)}</span>
             ${chip(id)}
             <p class="dim">${t(d)}</p>
-            ${id === 'improve-codebase-architecture' ? '<span class="tag concept mt-auto" style="align-self:flex-start">deep modules</span>' : ''}
+            ${id === 'improve-codebase-architecture' ? `<span class="mt-auto" style="align-self:flex-start">${term('deep-modules', '', 'tag concept')}</span>` : ''}
           </div>`).join('')}
       </div>
       <div class="callout sm" data-f="3" style="--c:var(--st-maintenance)">${chip('retro', 'sm')}<p>${t('keep.retro')}</p></div>` },
@@ -222,6 +236,8 @@ Commit your work to the current branch.</pre>
     ref('r-development', 'development', ['implement', 'implement-spec', 'tdd', 'code-review', 'pr', 'codebase-design']),
     ref('r-maintenance', 'maintenance', ['triage', 'diagnosing-bugs', 'improve-codebase-architecture', 'retro']),
     ref('r-hand', 'core', ['setup-matt-pocock-skills', 'ask-matt', 'handoff', 'wait-what', 'teach', 'writing-for-agents']),
+    gloss('g1', 1),
+    gloss('g2', 2),
 
     { id: 'sources', ch: 'ref', stage: 'core', render: (s) => `
       ${head(s)}
