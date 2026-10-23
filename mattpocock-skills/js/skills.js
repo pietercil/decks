@@ -32,8 +32,8 @@ DECK.skills = {
   // Maintenance
   'triage':           { stage: 'maintenance', invoker: 'user', uses: ['grilling'], to: ['implement'] },
   'diagnosing-bugs':  { stage: 'maintenance', invoker: 'model', uses: [], to: ['retro', 'improve-codebase-architecture'] },
-  'improve-codebase-architecture': { stage: 'maintenance', invoker: 'user', uses: ['grilling', 'codebase-design'], to: ['grill-with-docs'] },
-  'retro':            { stage: 'maintenance', invoker: 'user', uses: [], to: [] },
+  'improve-codebase-architecture': { stage: 'maintenance', invoker: 'user', uses: ['grilling', 'codebase-design', 'domain-modeling'], to: ['grill-with-docs'] },
+  'retro':            { stage: 'maintenance', invoker: 'user', uses: ['writing-for-agents'], to: [] },
   // Always at hand
   'setup-matt-pocock-skills': { stage: 'core', invoker: 'user', uses: [], to: [] },
   'ask-matt':         { stage: 'core', invoker: 'user', uses: [], to: [] },
