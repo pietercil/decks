@@ -1,0 +1,171 @@
+/* Deck-specific styles for "A toolkit for your agent". Builds on _shared/deck.css tokens. */
+
+.big-def { font-size: 34px; line-height: 1.35; font-weight: 600; }
+
+/* ---------- anatomy of a plugin (slide 4) ---------- */
+.file.tree { font-size: 19px; }
+.file.tree pre { padding: 20px 22px; }
+.part { display: flex; flex-direction: column; gap: 4px; border-left: 6px solid var(--brand); background: var(--panel); padding: 12px 20px; }
+.part .kname { font-size: 27px; font-weight: 800; letter-spacing: -.01em; }
+.part p.small { font-size: 20px; line-height: 1.35; }
+
+/* ---------- scenario switch (slide 6) ---------- */
+.switch { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 4px; gap: 4px; background: var(--bg-2); }
+.switch button { border: 0; background: none; border-radius: 999px; padding: 8px 18px; font-size: 18px; font-weight: 700; color: var(--fg-dim); cursor: pointer; }
+.switch button.on { background: var(--brand); color: #222; }
+.switch button:not(.on):hover { background: var(--panel); }
+
+/* ---------- mock app window (slide 6) ---------- */
+.app { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg-2); box-shadow: var(--shadow); min-height: 0; }
+.app-bar { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); font-size: 15px; font-weight: 600; color: var(--fg-faint); }
+.app-bar .dots { display: inline-flex; gap: 6px; }
+.app-bar .dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--line); }
+.app-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 9px; flex: 1; min-height: 0; }
+.pcard { background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--brand); border-radius: 6px; padding: 9px 16px; display: flex; flex-direction: column; gap: 2px; }
+.pcard .added { margin-left: auto; font-size: 14px; font-weight: 700; color: var(--ok); }
+.msg { border-radius: 10px; padding: 10px 14px; font-size: 18px; line-height: 1.4; }
+.chain { display: flex; flex-direction: column; gap: 4px; }
+.chain .lnk { display: grid; grid-template-columns: 190px 1fr; align-items: baseline; gap: 12px; font-size: 17px; line-height: 1.3; padding: 4px 12px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); }
+.chain .lnk code { font-weight: 600; color: var(--brand-ink); }
+.msg.tools { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; }
+.msg.tools .tool { font-size: 14.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--ok) 50%, var(--line)); color: var(--ok); background: var(--panel); }
+.msg.out { background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.msg.out .rule { color: var(--fg-faint); border-top: 1px dashed var(--line); padding-top: 6px; }
+
+.xstep { display: flex; gap: 14px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); }
+.xstep p.xs { font-size: 17px; line-height: 1.35; }
+.xstep p.xs code { font-size: 14px; }
+.mbar { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; white-space: nowrap; padding: 6px 14px; border-radius: 6px; background: var(--panel); border: 1px dashed var(--line); }
+.mbar code { font-size: 15px; font-weight: 600; color: var(--brand-ink); }
+.mbar .added { margin-left: auto; font-size: 14px; font-weight: 700; color: var(--ok); }
+.xstep .n { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--brand); color: #222; font-weight: 800; display: grid; place-items: center; font-size: 20px; }
+.xstep b { font-size: 21px; }
+
+/* ---------- the rack and the department benches (slide 7) ---------- */
+/* One colour per domain; Vergaderingen carries the brand yellow. */
+.k-meeting { --kc: var(--brand); }
+.k-incident { --kc: #c4553f; }
+.k-onboarding { --kc: #4d8a5a; }
+.k-questions { --kc: #3e6db3; }
+.k-reporting { --kc: #7b5aa8; }
+.k-knowledge { --kc: #2c7c84; }
+:root[data-theme="dark"] .k-incident { --kc: #e07560; }
+:root[data-theme="dark"] .k-onboarding { --kc: #72b07e; }
+:root[data-theme="dark"] .k-questions { --kc: #739ad8; }
+:root[data-theme="dark"] .k-reporting { --kc: #a487cc; }
+:root[data-theme="dark"] .k-knowledge { --kc: #52a8b0; }
+
+.rackslide { display: flex; flex-direction: column; justify-content: center; }
+/* The rack: a pegboard with a shelf the toolkits stand on. */
+.rack { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; padding: 34px 18px 14px; border-radius: 6px 6px 0 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--fg-faint) 35%, transparent) 1.6px, transparent 2px) 0 0 / 22px 22px, var(--bg-2);
+  border-bottom: 12px solid color-mix(in srgb, var(--fg-faint) 70%, var(--bg)); }
+.rack-tag { position: absolute; top: 8px; right: 14px; font-size: 13px; color: var(--fg-faint); }
+.kist { display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; }
+.kist h3 { font-size: 22px; margin-top: 6px; }
+.kist p.xs { font-size: 15px; line-height: 1.3; }
+.kbox { position: relative; width: 150px; height: 92px; margin-top: 18px; border: 3px solid var(--kc); border-radius: 9px; color: var(--kc);
+  background: linear-gradient(var(--kc) 0 22px, color-mix(in srgb, var(--kc) 14%, var(--panel)) 22px); display: grid; place-items: end center; padding-bottom: 10px;
+  transition: transform .35s ease, box-shadow .35s ease; }
+.kbox::before { content: ''; position: absolute; left: 50%; width: 54px; margin-left: -27px; top: -19px; height: 19px; border: 5px solid var(--kc); border-bottom: 0; border-radius: 14px 14px 0 0; }
+.kbox::after { content: ''; position: absolute; left: 50%; width: 22px; margin-left: -11px; top: 14px; height: 14px; border-radius: 3px; background: var(--panel); border: 2px solid var(--kc); }
+.kbox svg { width: 46px; height: 46px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* The benches: one per department; its toolkits drop onto the top. */
+.benches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; }
+.bench { display: flex; flex-direction: column; align-items: stretch; }
+.bench .minis { display: flex; gap: 10px; align-items: flex-end; height: 62px; padding: 0 14px; }
+.bench .top { height: 12px; border-radius: 3px; background: color-mix(in srgb, var(--fg-faint) 70%, var(--bg)); position: relative; margin-bottom: 30px; }
+.bench .top::before, .bench .top::after { content: ''; position: absolute; top: 12px; width: 10px; height: 28px; background: color-mix(in srgb, var(--fg-faint) 50%, var(--bg)); }
+.bench .top::before { left: 18px; } .bench .top::after { right: 18px; }
+.bench b { font-size: 24px; text-align: center; }
+.mk { position: relative; width: 58px; height: 46px; border-radius: 7px; background: var(--kc); color: #fff; display: grid; place-items: center;
+  opacity: 0; transform: translateY(-90px); transition: opacity .3s ease calc(var(--i) * .14s + .15s), transform .55s cubic-bezier(.3, 1.45, .55, 1) calc(var(--i) * .14s + .15s), box-shadow .3s ease; }
+.mk::before { content: ''; position: absolute; left: 50%; width: 22px; margin-left: -11px; top: -9px; height: 9px; border: 3px solid var(--kc); border-bottom: 0; border-radius: 8px 8px 0 0; }
+.mk.k-meeting { color: #222; }
+.mk svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.bench.on .mk, .stage.all .mk { opacity: 1; transform: none; }
+
+/* While a bench fills, its toolkits lift on the rack. */
+.rackslide:has(.b1.on):not(:has(.b2.on)) .p1 .kbox,
+.rackslide:has(.b2.on):not(:has(.b3.on)) .p2 .kbox,
+.rackslide:has(.b3.on):not(:has(.b4.on)) .p3 .kbox,
+.rackslide:has(.b4.on):not(:has(.b5.on)) .p4 .kbox,
+.rackslide:has(.b5.on):not(:has(.finale.on)) .p5 .kbox { transform: translateY(-10px); box-shadow: 0 12px 14px -8px color-mix(in srgb, var(--kc) 70%, transparent); }
+
+/* Finale: one Vergaderingen toolkit on the rack, on every bench. */
+.links { display: block; width: 100%; height: 64px; overflow: visible; }
+.links line { stroke: var(--brand); stroke-width: 2.5; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .8s ease; }
+.rackslide:has(.finale.on) .links line { stroke-dashoffset: 0; }
+.rackslide:has(.finale.on) .mk:not(.k-meeting) { opacity: .28; transition-delay: 0s; }
+.rackslide:has(.finale.on) .mk.k-meeting,
+.rackslide:has(.finale.on) .kist.k-meeting .kbox { box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--brand); }
+.rackslide .finale { margin-top: 18px; }
+
+/* ---------- how a toolkit gets onto the rack (slide 8) ---------- */
+.journey { display: grid; grid-template-columns: .8fr 1fr 1.15fr 1.2fr .95fr; gap: 34px; align-items: stretch; }
+.st { position: relative; display: flex; flex-direction: column; gap: 12px; }
+.st:not(:last-child)::after { content: '→'; position: absolute; right: -27px; top: 44%; font-size: 26px; color: var(--fg-faint); }
+.st .label { min-height: 34px; }
+.st p.xs { font-size: 16px; line-height: 1.35; margin-top: auto; }
+.st .kvis { flex: 1; display: grid; place-items: center; }
+.kbox.empty { border-style: dashed; background: var(--panel); opacity: .8; }
+.kbox.empty::before { border-style: dashed; }
+
+/* An opened toolkit: the lid swings up, the tools stand inside. */
+.kopen { position: relative; flex: 1; border: 3px solid var(--kc); border-radius: 0 0 9px 9px; border-top-width: 0; padding: 12px 10px 10px; margin-top: 30px;
+  background: color-mix(in srgb, var(--kc) 10%, var(--panel)); }
+.kopen .lid { position: absolute; left: -3px; right: -3px; top: -28px; height: 22px; background: var(--kc); border-radius: 9px 9px 2px 2px; transform-origin: left bottom; transform: rotate(-7deg); }
+.kopen .tools { display: flex; flex-direction: column; gap: 6px; }
+.tl { display: flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 15.5px; font-weight: 600; padding: 4px 10px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); color: var(--fg); }
+.tl.conn, .tl.check { font-family: inherit; font-size: 15px; }
+.tl.conn::before { content: '⇄'; color: var(--kc); }
+.tl.check::before { content: '✓'; color: var(--kc); }
+.tl.gone { text-decoration: line-through; color: var(--fg-faint); background: transparent; border-style: dashed; }
+.tl.new { border-color: var(--ok); }
+.tl i { margin-left: auto; font-style: normal; font-family: var(--f-sans, inherit); font-size: 12px; font-weight: 700; color: var(--ok); text-transform: uppercase; letter-spacing: .06em; }
+
+/* The inspection tag: a hang tag with a hole, as on a ladder or a drill. */
+.itag { position: relative; flex: 1; border: 2px solid var(--brand); border-radius: 8px 8px 8px 30px; background: var(--panel); padding: 14px 16px 12px 22px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow); }
+.itag::before { content: ''; position: absolute; left: 10px; top: 12px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--brand); }
+.itag-head { padding-left: 14px; font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--brand-ink); border-bottom: 2px solid var(--brand); padding-bottom: 6px; }
+.tf { display: flex; flex-direction: column; gap: 1px; border-bottom: 1px dashed var(--line); padding-bottom: 5px; }
+.tf:last-child { border-bottom: 0; }
+.tf span { font-size: 12.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-faint); }
+.tf b { font-size: 16px; font-weight: 600; line-height: 1.3; }
+
+/* Our rack, now with the new toolkit on it. */
+.minirack { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 26px 14px; place-items: end center; padding: 30px 12px 12px; border-radius: 6px 6px 0 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--fg-faint) 35%, transparent) 1.6px, transparent 2px) 0 0 / 18px 18px, var(--bg-2);
+  border-bottom: 10px solid color-mix(in srgb, var(--fg-faint) 70%, var(--bg)); }
+.minirack .mk { opacity: .35; transform: none; transition: none; }
+.minirack .mk.here { opacity: 1; box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--kc); }
+.ver { font-size: 15px; font-weight: 600; }
+.ver span { color: var(--brand-ink); }
+
+/* ---------- closing recap (slide 9) ---------- */
+.recap { display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+.recap .r { display: grid; grid-template-columns: 340px 1fr; align-items: baseline; gap: 24px; border-top: 1px solid #444; padding-top: 14px; }
+.recap .r span { font-size: 28px; color: var(--fg-dim); }
+.recap .r b { font-size: 44px; font-weight: 800; color: #fff; }
+
+/* ---------- reference tables ---------- */
+.xtable { display: grid; grid-template-columns: 220px 230px 1fr 270px; align-content: start; font-size: 18px; line-height: 1.4; }
+.xtable > div.mono { font-size: 15px; }
+.xtable > div { padding: 8px 14px 8px 0; border-bottom: 1px solid var(--line); }
+.xtable .th { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint); }
+.xtable.gov { grid-template-columns: 220px 1fr 1fr; font-size: 16px; }
+.xtable.gov > div { padding-right: 22px; }
+
+/* ---------- marketplace file and facts (slide 5) ---------- */
+.file .n { color: var(--brand); font-weight: 700; }
+.legend { gap: 4px; }
+.legend li { padding-left: 0; display: flex; gap: 10px; align-items: baseline; font-size: 17px; }
+.legend li::before { display: none; }
+.legend .n { color: var(--brand-ink); font-weight: 800; }
+
+/* ---------- source types (marketplace reference) ---------- */
+.srcs { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: baseline; font-size: 16px; line-height: 1.35; }
+.srcs code { font-size: 14px; }
+.fact p.small { font-size: 18px; line-height: 1.38; }
+.fact { padding-top: 16px; padding-bottom: 16px; }
