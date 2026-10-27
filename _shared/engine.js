@@ -1,4 +1,4 @@
-// Deck engine: routing, fragments, i18n, presenter view, overview, skill cards, print, sync between windows.
+// Deck engine: routing, fragments, i18n, scenarios, presenter view, overview, skill cards, print, sync between windows.
 (function () {
   const LANGS = Object.keys(I18N);
   const W = 1600, H = 900;
@@ -10,6 +10,11 @@
     get(k) { try { return localStorage.getItem(NS + k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(NS + k, v); } catch (e) { /* storage unavailable */ } },
   };
+  // The language is the one preference shared by the whole site: the index page reads and writes the same key.
+  const siteLang = {
+    get() { try { return localStorage.getItem('deck.lang'); } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem('deck.lang', v); } catch (e) { /* storage unavailable */ } },
+  };
 
   // ---------- i18n ----------
   // The deck's languages are whatever i18n files it loads; the first one is the fallback.
@@ -18,7 +23,7 @@
   const fromBrowser = (navigator.languages || [navigator.language || BASE])
     .map((l) => String(l).toLowerCase().split('-')[0])
     .find((l) => LANGS.includes(l));
-  let lang = qs.get('lang') || store.get('lang') || fromBrowser || BASE;
+  let lang = qs.get('lang') || siteLang.get() || fromBrowser || BASE;
   if (!LANGS.includes(lang)) lang = BASE;
 
   // [[id]] or [[id|label]] in a string becomes a clickable term (DECK.h.term).
@@ -37,8 +42,16 @@
     });
   };
 
+  // ---------- scenario ----------
+  // A deck can show some slides in several versions (DECK.scenarios; the first is the default).
+  // ?scenario=<id> wins; otherwise the browser remembers the last choice. Slides with perScenario: true follow it.
+  const SCEN = DECK.scenarios || [];
+  let scenario = [qs.get('scenario'), store.get('scenario')].find((v) => SCEN.includes(v)) || SCEN[0];
+  DECK.scenario = () => scenario;
+
   // Speaker notes are one paragraph per click: "[→]" in n.<slide-id> marks where the next step starts.
-  const noteParts = (id) => DECK.t('n.' + id).split('[→]').map((p) => p.trim()).filter(Boolean);
+  // A perScenario slide has its notes in n.<slide-id>.<scenario>.
+  const noteParts = (s) => DECK.t('n.' + s.id + (s.perScenario ? '.' + scenario : '')).split('[→]').map((p) => p.trim()).filter(Boolean);
 
   // ---------- state ----------
   const slides = DECK.slides;
@@ -59,12 +72,13 @@
   // In handout mode every fragment is already visible, so a slide has no steps left to click through.
   const maxOf = (i) => {
     if (ALL) return 0;
-    if (maxCache[i] == null) {
+    const key = i + ':' + scenario;
+    if (maxCache[key] == null) {
       const tmp = document.createElement('div');
       tmp.innerHTML = slides[i].render(slides[i]);
-      maxCache[i] = Math.max(0, ...[...tmp.querySelectorAll('[data-f]')].map((el) => +el.dataset.f));
+      maxCache[key] = Math.max(0, ...[...tmp.querySelectorAll('[data-f]')].map((el) => +el.dataset.f));
     }
-    return maxCache[i];
+    return maxCache[key];
   };
 
   // ---------- rendering ----------
@@ -102,6 +116,7 @@
     if (msg.type === 'nav' && (msg.idx !== idx || msg.step !== step)) go(msg.idx, msg.step, false);
     if (msg.type === 'lang' && msg.lang !== lang) setLang(msg.lang, false);
     if (msg.type === 'all' && MODE === 'show' && msg.on !== ALL) setAll(msg.on, false);
+    if (msg.type === 'scenario' && msg.scenario !== scenario) setScenario(msg.scenario, false);
   }
   if (bc) bc.onmessage = (e) => receive(e.data);
   window.addEventListener('storage', (e) => { if (e.key === NS + 'sync' && e.newValue) receive(JSON.parse(e.newValue)); });
@@ -116,10 +131,11 @@
     if (MODE === 'show') syncUrl();
     if (broadcast) send({ type: 'nav', idx, step });
   }
-  // The URL mirrors the slide and the handout mode, so a copied link opens the same view.
+  // The URL mirrors the slide, the handout mode and a non-default scenario, so a copied link opens the same view.
   function syncUrl() {
     const p = new URLSearchParams(location.search);
     if (ALL) p.set('all', ''); else p.delete('all');
+    if (scenario !== SCEN[0]) p.set('scenario', scenario); else p.delete('scenario');
     const q = p.toString().replace(/=(?=&|$)/g, '');
     history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + '#' + (idx + 1));
   }
@@ -133,11 +149,18 @@
     updateBadge();
     if (broadcast) send({ type: 'all', on });
   }
+  function setScenario(v, broadcast = true) {
+    if (!SCEN.includes(v)) return;
+    scenario = v; store.set('scenario', v);
+    view.render();
+    if (MODE === 'show') syncUrl();
+    if (broadcast) send({ type: 'scenario', scenario: v });
+  }
   const next = () => (step < maxOf(idx) ? go(idx, step + 1) : idx < slides.length - 1 && go(idx + 1, 0));
   const prev = () => (step > 0 ? go(idx, step - 1) : idx > 0 && go(idx - 1, maxOf(idx - 1)));
 
   function setLang(l, broadcast = true) {
-    lang = l; store.set('lang', l);
+    lang = l; siteLang.set(l);
     document.documentElement.lang = l;
     document.querySelectorAll('[data-lang]').forEach((b) => b.classList.toggle('on', b.dataset.lang === l));
     setUiText();
@@ -178,7 +201,7 @@
         <p class="purpose">${t('term.' + id + '.def')}</p>
         <dl>
           <dt>${t('modal.origin')}</dt><dd>${t('term.' + id + '.origin')}</dd>
-          ${tm.skills.length ? `<dt>${t('modal.skills')}</dt><dd>${tm.skills.map((s) => DECK.chip(s)).join('')}</dd>` : ''}
+          ${(tm.skills || []).length ? `<dt>${t('modal.skills')}</dt><dd>${tm.skills.map((s) => DECK.chip(s)).join('')}</dd>` : ''}
           ${tm.src ? `<dt>${t('modal.src')}</dt><dd><a href="${tm.src}" target="_blank" rel="noopener">${tm.srcLabel} ↗</a></dd>` : ''}
         </dl>
       </div></div>`;
@@ -203,6 +226,7 @@
     fullscreen: { key: 'F', run: () => toggleFullscreen() },
     blackout: { key: 'B', run: () => { blackout.hidden = false; } },
   };
+  SCEN.forEach((v) => { CMDS['scenario-' + v] = { run: () => setScenario(v), on: () => scenario === v }; });
   const runCmd = (c) => { if (CMDS[c]) { toggleMenu(false); CMDS[c].run(); } };
   const cmdButtons = (ids) => ids.map((c) => `
     <button class="cmd ${CMDS[c].on && CMDS[c].on() ? 'on' : ''}" data-cmd="${c}">
@@ -220,6 +244,7 @@
       <div class="menu-in" role="dialog" aria-label="${DECK.t('ui.menu')}">
         ${MODE === 'show' ? `<a class="cmd home" href="../"><span>← ${DECK.t('ui.home')}</span></a>` : ''}
         <span class="label">${DECK.t('menu.view')}</span>${cmdButtons(['all', 'theme', 'overview', 'fullscreen', 'blackout'])}
+        ${SCEN.length > 1 ? `<span class="label">${DECK.t('menu.scenario')} <kbd>S</kbd></span>${cmdButtons(SCEN.map((v) => 'scenario-' + v))}` : ''}
         <span class="label">${DECK.t('menu.present')}</span>${cmdButtons(['presenter'])}
         <span class="label">${DECK.t('menu.export')}</span>${cmdButtons(['pdf', 'pdfnotes'])}
         <p class="hint">${DECK.t('menu.keys')}</p>
@@ -276,6 +301,7 @@
     else if (k === 'Home') go(0);
     else if (k === 'End') go(slides.length - 1);
     else if ((k === 'l' || k === 'L') && LANGS.length > 1) setLang(LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length]);
+    else if ((k === 's' || k === 'S') && SCEN.length > 1) setScenario(SCEN[(SCEN.indexOf(scenario) + 1) % SCEN.length]);
     else if (k === 't' || k === 'T') toggleTheme();
     else if ((k === 'o' || k === 'O') && MODE === 'show') toggleOverview();
     else if ((k === 'p' || k === 'P') && MODE === 'show') openPresenter();
@@ -394,6 +420,7 @@
   }
 
   // Print is always light. ?print gives one landscape page per slide; ?print&notes puts the notes under each slide on a portrait page.
+  // A paper copy can't switch, so a perScenario slide prints once per scenario (6a, 6b).
   if (MODE === 'print') {
     const withNotes = qs.has('notes');
     document.documentElement.dataset.theme = 'light';
@@ -403,15 +430,19 @@
     view = {
       render() {
         document.querySelectorAll('body > .page').forEach((el) => el.remove());
-        slides.forEach((s, i) => {
+        const chosen = scenario;
+        slides.forEach((s, i) => (s.perScenario ? SCEN : [scenario]).forEach((v, j) => {
+          scenario = v;
+          const n = s.perScenario ? `${i + 1}${'abcdefgh'[j]}` : `${i + 1}`;
           const page = document.createElement('div');
           page.className = 'page';
           page.innerHTML = '<div class="stage"></div>' + (withNotes
-            ? `<div class="print-notes"><div class="ch">${i + 1} / ${slides.length} · ${DECK.t('ch.' + s.ch)}</div>${noteParts(s.id).map((p) => `<p>${p}</p>`).join('')}</div>`
+            ? `<div class="print-notes"><div class="ch">${n} / ${slides.length} · ${DECK.t('ch.' + s.ch)}</div>${noteParts(s).map((p) => `<p>${p}</p>`).join('')}</div>`
             : '');
           document.body.appendChild(page);
           paint(page.querySelector('.stage'), i, 99, { all: true });
-        });
+        }));
+        scenario = chosen;
         this.rendered = true;
       },
       step() {},
@@ -457,7 +488,7 @@
         const [from, to] = windowOf(ci);
         const notesEl = root.querySelector('#pNotes');
         notesEl.innerHTML = `<div class="ch">${idx + 1}/${slides.length} · ${DECK.t('ch.' + s.ch)} · step ${step}/${maxOf(idx)}</div>` +
-          noteParts(s.id).map((p, i) => `<p class="np ${i < step ? 'past' : i === step ? 'cur' : ''}">${i ? '<span class="click">→</span>' : ''}${p}</p>`).join('');
+          noteParts(s).map((p, i) => `<p class="np ${i < step ? 'past' : i === step ? 'cur' : ''}">${i ? '<span class="click">→</span>' : ''}${p}</p>`).join('');
         notesEl.querySelector('.np.cur')?.scrollIntoView({ block: 'nearest' });
         root.querySelector('#pChap').textContent = DECK.chapters[ci].min ? `${DECK.t('p.budget')}: ${DECK.chapters[ci].min} min · ${from}:00 → ${to}:00` : DECK.t('p.nobudget');
         root.querySelector('#pNextLbl').textContent = step < maxOf(idx) ? `${DECK.t('p.next')}: ${DECK.t('p.morestep')}` : `${DECK.t('p.next')}:`;
