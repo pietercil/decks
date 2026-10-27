@@ -10,6 +10,11 @@
     get(k) { try { return localStorage.getItem(NS + k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(NS + k, v); } catch (e) { /* storage unavailable */ } },
   };
+  // The language is the one preference shared by the whole site: the index page reads and writes the same key.
+  const siteLang = {
+    get() { try { return localStorage.getItem('deck.lang'); } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem('deck.lang', v); } catch (e) { /* storage unavailable */ } },
+  };
 
   // ---------- i18n ----------
   // The deck's languages are whatever i18n files it loads; the first one is the fallback.
@@ -18,7 +23,7 @@
   const fromBrowser = (navigator.languages || [navigator.language || BASE])
     .map((l) => String(l).toLowerCase().split('-')[0])
     .find((l) => LANGS.includes(l));
-  let lang = qs.get('lang') || store.get('lang') || fromBrowser || BASE;
+  let lang = qs.get('lang') || siteLang.get() || fromBrowser || BASE;
   if (!LANGS.includes(lang)) lang = BASE;
 
   // [[id]] or [[id|label]] in a string becomes a clickable term (DECK.h.term).
@@ -155,7 +160,7 @@
   const prev = () => (step > 0 ? go(idx, step - 1) : idx > 0 && go(idx - 1, maxOf(idx - 1)));
 
   function setLang(l, broadcast = true) {
-    lang = l; store.set('lang', l);
+    lang = l; siteLang.set(l);
     document.documentElement.lang = l;
     document.querySelectorAll('[data-lang]').forEach((b) => b.classList.toggle('on', b.dataset.lang === l));
     setUiText();

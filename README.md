@@ -51,7 +51,7 @@ Een slide met scenario’s staat er één keer per scenario in (6a, 6b).
 
 Elke optie uit het menu werkt ook als link:
 
-- `?lang=en` / `?lang=nl`: start in die taal (anders de laatst gekozen taal, dan de taal van de browser)
+- `?lang=en` / `?lang=nl`: start in die taal (anders de laatst gekozen taal, dan de taal van de browser). De gekozen taal geldt voor de hele site: de index en elk deck delen ze.
 - `?all`: handout-modus (wint van wat de browser onthouden heeft)
 - `?theme=dark`: start in het donkere thema
 - `?scenario=it`: start met dat voorbeeld, in een deck met scenario’s (anders het laatst gekozen, dan het eerste)
