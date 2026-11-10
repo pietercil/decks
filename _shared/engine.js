@@ -49,6 +49,13 @@
   let scenario = [qs.get('scenario'), store.get('scenario')].find((v) => SCEN.includes(v)) || SCEN[0];
   DECK.scenario = () => scenario;
 
+  // ---------- platform ----------
+  // A second, independent setting next to the scenario (DECK.platforms; the first is the default): the same deck for, say,
+  // GitHub or Azure DevOps. ?platform=<id> wins; otherwise the browser remembers the last choice. Slides read DECK.platform().
+  const PLAT = DECK.platforms || [];
+  let platform = [qs.get('platform'), store.get('platform')].find((v) => PLAT.includes(v)) || PLAT[0];
+  DECK.platform = () => platform;
+
   // Speaker notes are one paragraph per click: "[→]" in n.<slide-id> marks where the next step starts.
   // A perScenario slide has its notes in n.<slide-id>.<scenario>.
   const noteParts = (s) => DECK.t('n.' + s.id + (s.perScenario ? '.' + scenario : '')).split('[→]').map((p) => p.trim()).filter(Boolean);
@@ -72,7 +79,7 @@
   // In handout mode every fragment is already visible, so a slide has no steps left to click through.
   const maxOf = (i) => {
     if (ALL) return 0;
-    const key = i + ':' + scenario;
+    const key = i + ':' + scenario + ':' + platform;
     if (maxCache[key] == null) {
       const tmp = document.createElement('div');
       tmp.innerHTML = slides[i].render(slides[i]);
@@ -117,6 +124,8 @@
     if (msg.type === 'lang' && msg.lang !== lang) setLang(msg.lang, false);
     if (msg.type === 'all' && MODE === 'show' && msg.on !== ALL) setAll(msg.on, false);
     if (msg.type === 'scenario' && msg.scenario !== scenario) setScenario(msg.scenario, false);
+    if (msg.type === 'platform' && msg.platform !== platform) setPlatform(msg.platform, false);
+    if (msg.type === 'sim' && DECK.setState) { DECK.setState(msg.state); refreshLive(); }
   }
   if (bc) bc.onmessage = (e) => receive(e.data);
   window.addEventListener('storage', (e) => { if (e.key === NS + 'sync' && e.newValue) receive(JSON.parse(e.newValue)); });
@@ -136,6 +145,7 @@
     const p = new URLSearchParams(location.search);
     if (ALL) p.set('all', ''); else p.delete('all');
     if (scenario !== SCEN[0]) p.set('scenario', scenario); else p.delete('scenario');
+    if (PLAT.length && platform !== PLAT[0]) p.set('platform', platform); else p.delete('platform');
     const q = p.toString().replace(/=(?=&|$)/g, '');
     history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + '#' + (idx + 1));
   }
@@ -155,6 +165,13 @@
     view.render();
     if (MODE === 'show') syncUrl();
     if (broadcast) send({ type: 'scenario', scenario: v });
+  }
+  function setPlatform(v, broadcast = true) {
+    if (!PLAT.includes(v)) return;
+    platform = v; store.set('platform', v);
+    view.render();
+    if (MODE === 'show') syncUrl();
+    if (broadcast) send({ type: 'platform', platform: v });
   }
   const next = () => (step < maxOf(idx) ? go(idx, step + 1) : idx < slides.length - 1 && go(idx + 1, 0));
   const prev = () => (step > 0 ? go(idx, step - 1) : idx > 0 && go(idx - 1, maxOf(idx - 1)));
@@ -176,6 +193,7 @@
   }
   const savedTheme = ['light', 'dark'].includes(qs.get('theme')) ? qs.get('theme') : store.get('theme');
   if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+  else if (DECK.defaultTheme) document.documentElement.dataset.theme = DECK.defaultTheme;
 
   // ---------- skill card modal ----------
   function openSkill(id, stageEl) {
@@ -189,6 +207,7 @@
     wrap.querySelector('[data-action="close"]').focus();
   }
   // ---------- term dialog: what a word means, where it comes from, which skills use it ----------
+  const call = (v) => (typeof v === 'function' ? v() : v);
   function openTerm(id, stageEl) {
     const tm = (DECK.terms || {})[id]; if (!tm) return;
     const t = DECK.t;
@@ -202,7 +221,7 @@
         <dl>
           <dt>${t('modal.origin')}</dt><dd>${t('term.' + id + '.origin')}</dd>
           ${(tm.skills || []).length ? `<dt>${t('modal.skills')}</dt><dd>${tm.skills.map((s) => DECK.chip(s)).join('')}</dd>` : ''}
-          ${tm.src ? `<dt>${t('modal.src')}</dt><dd><a href="${tm.src}" target="_blank" rel="noopener">${tm.srcLabel} ↗</a></dd>` : ''}
+          ${tm.src ? `<dt>${t('modal.src')}</dt><dd><a href="${call(tm.src)}" target="_blank" rel="noopener">${call(tm.srcLabel)} ↗</a></dd>` : ''}
         </dl>
       </div></div>`;
     stageEl.appendChild(wrap);
@@ -226,6 +245,7 @@
     fullscreen: { key: 'F', run: () => toggleFullscreen() },
     blackout: { key: 'B', run: () => { blackout.hidden = false; } },
   };
+  PLAT.forEach((v) => { CMDS['platform-' + v] = { run: () => setPlatform(v), on: () => platform === v }; });
   SCEN.forEach((v) => { CMDS['scenario-' + v] = { run: () => setScenario(v), on: () => scenario === v }; });
   const runCmd = (c) => { if (CMDS[c]) { toggleMenu(false); CMDS[c].run(); } };
   const cmdButtons = (ids) => ids.map((c) => `
@@ -245,6 +265,7 @@
         ${MODE === 'show' ? `<a class="cmd home" href="../"><span>← ${DECK.t('ui.home')}</span></a>` : ''}
         <span class="label">${DECK.t('menu.view')}</span>${cmdButtons(['all', 'theme', 'overview', 'fullscreen', 'blackout'])}
         ${SCEN.length > 1 ? `<span class="label">${DECK.t('menu.scenario')} <kbd>S</kbd></span>${cmdButtons(SCEN.map((v) => 'scenario-' + v))}` : ''}
+        ${PLAT.length > 1 ? `<span class="label">${DECK.t('menu.platform')} <kbd>G</kbd></span>${cmdButtons(PLAT.map((v) => 'platform-' + v))}` : ''}
         <span class="label">${DECK.t('menu.present')}</span>${cmdButtons(['presenter'])}
         <span class="label">${DECK.t('menu.export')}</span>${cmdButtons(['pdf', 'pdfnotes'])}
         <p class="hint">${DECK.t('menu.keys')}</p>
@@ -266,8 +287,27 @@
     badge.title = DECK.t('ui.handoutoff');
   }
 
+  // ---------- live regions: a slide with an interactive part (DECK.act) marks it data-live="<name>" ----------
+  // A click on [data-act] calls DECK.act(name, dataset); the slide is then rendered again and only its live regions
+  // are swapped in, so fragments don't replay and a focused control keeps focus.
+  function refreshLive() {
+    const s = slides[idx], tmp = document.createElement('div');
+    tmp.innerHTML = s.render(s);
+    const key = (el) => (el && el.dataset && el.dataset.act ? el.dataset.act + '|' + (el.dataset.id || '') : null);
+    const focused = key(document.activeElement);
+    document.querySelectorAll('#stage [data-live], #pvCur [data-live]').forEach((el) => {
+      const fresh = tmp.querySelector(`[data-live="${el.dataset.live}"]`);
+      if (fresh) el.innerHTML = fresh.innerHTML;
+    });
+    document.querySelectorAll('#stage [data-live] [data-f], #pvCur [data-live] [data-f]').forEach((el) => el.classList.add('on'));
+    if (focused) [...document.querySelectorAll('[data-act]')].find((el) => key(el) === focused)?.focus({ preventScroll: true });
+  }
+  DECK.refresh = refreshLive;
+
   // ---------- in-slide actions (event delegation) ----------
   document.addEventListener('click', (e) => {
+    const actEl = e.target.closest('[data-act]');
+    if (actEl && !e.target.closest('#overview') && DECK.act) { e.stopPropagation(); if (!actEl.disabled) { DECK.act(actEl.dataset.act, actEl.dataset); refreshLive(); if (DECK.getState) send({ type: 'sim', state: DECK.getState() }); } return; }
     const cmdEl = e.target.closest('[data-cmd]');
     if (cmdEl && !e.target.closest('#overview')) { e.stopPropagation(); runCmd(cmdEl.dataset.cmd); return; }
     if (!menu.hidden && !e.target.closest('#menu') && !e.target.closest('#menuBtn')) toggleMenu(false);
@@ -302,6 +342,7 @@
     else if (k === 'End') go(slides.length - 1);
     else if ((k === 'l' || k === 'L') && LANGS.length > 1) setLang(LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length]);
     else if ((k === 's' || k === 'S') && SCEN.length > 1) setScenario(SCEN[(SCEN.indexOf(scenario) + 1) % SCEN.length]);
+    else if ((k === 'g' || k === 'G') && PLAT.length > 1) setPlatform(PLAT[(PLAT.indexOf(platform) + 1) % PLAT.length]);
     else if (k === 't' || k === 'T') toggleTheme();
     else if ((k === 'o' || k === 'O') && MODE === 'show') toggleOverview();
     else if ((k === 'p' || k === 'P') && MODE === 'show') openPresenter();
@@ -345,7 +386,7 @@
     if (ALL) setAll(false);
     const w = window.open(location.pathname + '?presenter&lang=' + lang + '#' + (idx + 1), 'deck-presenter', 'width=1400,height=900');
     if (!w) console.warn('[deck] presenter window blocked: allow pop-ups or open ?presenter manually');
-    setTimeout(() => send({ type: 'nav', idx, step }), 800);
+    setTimeout(() => { send({ type: 'nav', idx, step }); if (DECK.getState) send({ type: 'sim', state: DECK.getState() }); }, 800);
   }
 
   // Progress: one segment per slide in the colour of its stage (s.bar = [stage, stage] splits it; 'core' is gold).
