@@ -7,6 +7,7 @@ Presentaties en handleidingen, gehost via GitHub Pages.
 | Skills for Real Engineers | [`mattpocock-skills/`](mattpocock-skills/) | De agent skills van Matt Pocock: 10 slides overzicht (±10 min) en een naslag met elke skill. Nederlands en Engels |
 | Een gereedschapskist voor je agent | [`agent-plugins/`](agent-plugins/) | Agent plugins en marketplaces, uitgelegd met een werkplaats als beeld (plugin = gereedschapskist voor één domein, marketplace = het rek): 9 slides eerste kennismaking (±10 min) en een naslag. Nederlands en Engels |
 | Het schip van Theseus | [`ship-of-theseus/`](ship-of-theseus/) | De plugin ship-of-theseus, die documentatie waar houdt terwijl de code verandert (Living Docs, Doc Drift, `distill`, `check`, Stop-hook): 10 slides (±10 min) en een naslag. Nog niet beproefd in een echt project; het voorbeeld is verzonnen. Nederlands en Engels |
+| Git voor iedereen | [`git-for-everyone/`](git-for-everyone/) | Git als tijdmachine voor je bestanden, ook zonder code (commit, geschiedenis, branch, pull request, remote), met Claude Code die de commando’s uitvoert. 10 slides (±10 min) waarvan vier interactief met een gesimuleerde repo, en een naslag met spiekbrief. Voorbeeld naar keuze (infra of beleidsdocument) en platform naar keuze (Azure DevOps of GitHub). Nederlands en Engels |
 
 ## Lokaal bekijken
 
@@ -36,7 +37,8 @@ Alle opties staan in het **☰-menu** rechtsboven (of druk op **?**), en ook op 
 | **B** of **.** | zwart scherm |
 | **F** | volledig scherm |
 | **L** | taal wisselen (NL / EN) |
-| **S** | voorbeeld wisselen, in een deck met scenario’s (`agent-plugins/` en `ship-of-theseus/`: slide 6) |
+| **S** | voorbeeld wisselen, in een deck met scenario’s (`agent-plugins/` en `ship-of-theseus/`: slide 6; `git-for-everyone/`: slides 4 t/m 7 en 9) |
+| **G** | platform wisselen (Azure DevOps / GitHub), in een deck met platformen (`git-for-everyone/`) |
 | Esc | menu / kaart / overzicht / zwart scherm sluiten |
 
 Klik op een `/skill` om zijn kaart te openen, en op een gestippeld onderlijnd begrip voor zijn uitleg (alle begrippen staan ook op de slides *Begrippen* in de naslag). Op tablet en telefoon: swipen om te navigeren.
@@ -56,6 +58,7 @@ Elke optie uit het menu werkt ook als link:
 - `?all`: handout-modus (wint van wat de browser onthouden heeft)
 - `?theme=dark`: start in het donkere thema
 - `?scenario=it`: start met dat voorbeeld, in een deck met scenario’s (anders het laatst gekozen, dan het eerste)
+- `?platform=github` / `?platform=azure`: start voor dat platform, in een deck met platformen (anders het laatst gekozen, dan het eerste)
 - `#7` of `#build`: open op slide 7, of op de slide met die id
 - `?print` / `?print&notes`: de twee PDF-varianten
 - `?presenter`: de presenter view
