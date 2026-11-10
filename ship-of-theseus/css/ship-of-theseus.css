@@ -1,0 +1,110 @@
+/* Deck-specific styles for "The ship of Theseus". Builds on _shared/deck.css tokens. */
+
+.big-code { font-size: 22px; font-weight: 700; color: var(--brand-ink); }
+.tag.illus { border-style: dashed; color: var(--fg-dim); }
+.tag.warn { border-color: var(--bad, #c0392b); color: var(--bad, #c0392b); font-size: 17px; padding: 4px 14px; font-weight: 800; }
+
+/* ---------- the lane: five skills around one Change (slide 4) ---------- */
+.lane { display: flex; align-items: stretch; gap: 10px; }
+.lane .arr { align-self: center; font-size: 28px; color: var(--fg-faint); }
+.lane .node { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--line); border-top: 6px solid var(--brand); background: var(--panel); border-radius: 4px; min-width: 0; }
+.lane .node.human { border-top-color: var(--fg-faint); background: var(--bg-2); border-style: dashed; border-top-style: solid; }
+.lane .node .when { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint); }
+.lane .node code { font-size: 17px; font-weight: 700; color: var(--brand-ink); overflow-wrap: anywhere; }
+.lane .node b { font-size: 22px; }
+.rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-content: start; }
+.rules .rule { border-top: 3px solid var(--brand); padding-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.rules .rule h3 { font-size: 22px; }
+
+/* ---------- term cards (slide 5) ---------- */
+.tgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-content: start; }
+.tcard { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; background: var(--panel); border: 1px solid var(--line); border-top: 5px solid var(--brand); border-radius: 4px; }
+.tcard.note { border-top-color: transparent; background: var(--bg-2); border-color: transparent; justify-content: center; }
+.tcard .term.tag { font-size: 20px; font-weight: 700; padding: 4px 14px; }
+
+/* ---------- example rows (slide 6) ---------- */
+.switch { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 4px; gap: 4px; background: var(--bg-2); }
+.switch button { border: 0; background: none; border-radius: 999px; padding: 8px 18px; font-size: 18px; font-weight: 700; color: var(--fg-dim); cursor: pointer; }
+.switch button.on { background: var(--brand); color: #222; }
+.switch button:not(.on):hover { background: var(--panel); }
+.xrows { display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; }
+.xrow { display: grid; grid-template-columns: 36px 0.85fr 1.5fr; gap: 16px; align-items: start; padding: 9px 0; border-top: 1px solid var(--line); }
+.xrow b { font-size: 21px; }
+.xrow p.xs { font-size: 16px; line-height: 1.35; }
+.xrow p.xs code, .xrow b code { font-size: 14px; }
+.xrow .file { font-size: 14px; line-height: 1.4; }
+.xrow .file pre { padding: 8px 14px; }
+.n { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--brand); color: #222; font-weight: 800; display: grid; place-items: center; font-size: 19px; }
+
+/* ---------- Stop hook chain (slide 7) ---------- */
+.hookchain { display: flex; flex-direction: column; gap: 8px; }
+.hk { display: flex; gap: 14px; align-items: flex-start; padding: 9px 14px; background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--brand); border-radius: 4px; }
+.hk b { font-size: 20px; }
+.hk .xs { font-size: 16px; line-height: 1.35; }
+.hk .xs code { font-size: 14px; }
+.hk.go { border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, var(--panel)); }
+.hk.go .n { background: var(--ok); color: #fff; }
+.file .fname + pre, .file pre { overflow-wrap: anywhere; }
+
+/* ---------- distill steps and matrix (slide 8) ---------- */
+.dstep { display: flex; gap: 14px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--line); }
+.dstep b { font-size: 21px; }
+.dstep .xs { font-size: 17px; line-height: 1.35; }
+.mtx { display: grid; grid-template-columns: 110px repeat(6, 1fr); font-size: 16px; align-items: center; }
+.mtx .th { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-faint); padding: 0 4px 8px; text-align: center; }
+.mtx .rowh { font-weight: 700; padding: 10px 0; border-top: 1px solid var(--line); }
+.mtx .mx { text-align: center; padding: 10px 2px; border-top: 1px solid var(--line); font-weight: 700; font-size: 15px; }
+.mtx .mx.yes { color: var(--ok); }
+.mtx .mx.maybe { color: var(--brand-ink); font-weight: 600; }
+.mtx .mx.no { color: var(--fg-faint); }
+
+/* ---------- limits (slide 9) ---------- */
+.status { display: flex; align-items: center; gap: 18px; padding: 12px 18px; border: 1px solid var(--bad, #c0392b); border-left: 6px solid var(--bad, #c0392b); background: color-mix(in srgb, var(--bad, #c0392b) 8%, transparent); border-radius: 4px; }
+.status p { margin: 0; }
+.panel h3 { font-size: 21px; }
+
+/* ---------- closing slide (slide 10) ---------- */
+.trysteps { display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+.trysteps .r { display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 18px; border-top: 1px solid #444; padding-top: 12px; }
+.trysteps .r b { font-size: 26px; font-weight: 700; color: #fff; }
+.trysteps .r code { font-size: 22px; color: var(--brand); }
+.trysteps .r .n { width: 40px; height: 40px; font-size: 22px; }
+
+/* ---------- reference tables ---------- */
+.xtable { display: grid; align-content: start; font-size: 17px; line-height: 1.4; grid-template-columns: 200px 230px 1fr 270px; }
+.xtable > div { padding: 7px 14px 7px 0; border-bottom: 1px solid var(--line); }
+.xtable .th { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint); }
+.xtable.skl { grid-template-columns: 250px 230px 1fr 150px; }
+.xtable.typ { grid-template-columns: 230px 190px 1fr 300px; font-size: 16px; }
+.xtable code { font-size: 15px; }
+.srcs { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; align-items: baseline; font-size: 16px; line-height: 1.35; }
+.srcs code { font-size: 14px; }
+
+/* ---------- tuning after first browser pass ---------- */
+.lane .node { padding: 12px 14px; gap: 4px; }
+.lane .node code { font-size: 14.5px; }
+.lane .node p.xs { font-size: 15.5px; line-height: 1.3; }
+.lane .node p.xs code { font-size: 13px; }
+.lane .node b { font-size: 21px; }
+.slide .panel.soft p.small { font-size: 18px; line-height: 1.35; }
+.panel.soft .big-code { font-size: 20px; }
+.rules { gap: 20px; }
+.rules .rule h3 { font-size: 19px; }
+.rules .rule p.xs { font-size: 15.5px; line-height: 1.3; }
+.tcard p.small { font-size: 20px; }
+.panel ul.small { font-size: 22px; gap: 10px; }
+.panel p.small { font-size: 22px; }
+.lane .node code { font-size: 15.5px; }
+.lane .node p.xs { font-size: 17px; }
+.rules .rule h3 { font-size: 21px; }
+.rules .rule p.xs { font-size: 17px; }
+.slide .panel.soft p.small { font-size: 20px; }
+.xtable { font-size: 19px; }
+.xtable code { font-size: 16px; }
+.xtable.typ { font-size: 17.5px; }
+.panel.soft h3 + p.xs { font-size: 18px; }
+.xrows { gap: 4px; }
+.xrow { padding: 6px 0; }
+.xrow .file { font-size: 13.5px; line-height: 1.35; }
+.xrow .file pre { padding: 6px 12px; }
+.xrow b { font-size: 20px; }
